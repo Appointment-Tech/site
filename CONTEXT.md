@@ -22,6 +22,12 @@ Glossário e decisões de escopo para o redesign da landing page e páginas sat�
 - Notificação de lead por e-mail via Resend — ver [ADR 0001](docs/adr/0001-notificacao-de-leads-por-email-sem-banco.md). Credenciais em `.env` (fora do git, ver `.env.example`).
 - `/api/invites` e `/api/pricing-inquiries` são **server routes nativas do TanStack Start** (`createServerFileRoute(...).methods({...})`, `src/routes/api/*.ts`) — mesmo processo Node que serve as páginas, sem container/porta extra. **Não validado por build real** (esta máquina não tem Node/Docker utilizável localmente) — a primeira validação de que a API compila é o `docker build` no droplet, durante o deploy.
 
+## Páginas legais (LGPD)
+
+`public/privacy.html`, `public/politica-de-privacidade.html` e `public/termos-legais.html` **não vieram do Lovable** — são as páginas reais de Política de Privacidade e Termos de Uso (CNPJ, LGPD, menção a Asaas/Firebase/DigitalOcean como operadores de dados), encontradas **não versionadas** direto em `/var/www/html` no droplet de produção (deploy manual antigo, nunca commitado). Muito provavelmente linkadas nas fichas do app nas lojas (App Store/Play Store exigem URL de política de privacidade) — por isso foram preservadas nos mesmos paths (`/privacy.html`, `/politica-de-privacidade.html`, `/termos-legais.html`) em vez de descartadas. `politica-de-privacidade.html` e `termos-legais.html` também dependem de `public/assets/images/a-logo-final.png` (path relativo `assets/images/...`, replicado só pra essas 2 páginas).
+
+Pendência conhecida: o texto de `politica-de-privacidade.html` se autorreferencia como `https://marcaumappointment.com/politica-de-privacidade` (sem `.html`) — não configurei essa rota extensionless, só o `.html` original. Verificar se algo realmente depende dessa URL exata antes de considerar resolvido.
+
 ## v1 vs v2
 
 O repo hospeda **duas versões** do site, decisão do Leandro em 10/08 (ele gostou de dois designs diferentes gerados no Lovable):
