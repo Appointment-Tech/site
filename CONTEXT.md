@@ -20,3 +20,10 @@ Glossário e decisões de escopo para o redesign da landing page e páginas sat�
 - Stack alvo: **React + Vite**, buildado e servido por um único serviço **Node/Express** dentro de um container Docker (mesmo container serve os assets estáticos e a API dos formulários).
 - Deploy no **mesmo droplet DigitalOcean da produção do Appointment** (`appointment-prod`, `143.110.153.41`, host `appointment-debian-s-1vcpu-2gb-sfo3-01`) — hoje esse droplet serve o site como HTML estático via Apache; troca só o apontamento do proxy pro novo container.
 - Notificação de lead por e-mail via Resend — ver [ADR 0001](docs/adr/0001-notificacao-de-leads-por-email-sem-banco.md). Credenciais em `.env` (fora do git, ver `.env.example`).
+
+## v1 vs v2
+
+O repo hospeda **duas versões** do site, decisão do Leandro em 10/08 (ele gostou de dois designs diferentes gerados no Lovable):
+
+- **v1** (raiz do domínio, `/`) — o design "oficial", com o fluxo de Convite/Consulta de Preço descrito acima. Fonte completa em `src/` (TanStack Start), buildada e servida por Node.
+- **v2** (`v2.marcaumappointment.com`) — um design alternativo mais editorial, do projeto Lovable "See My Project!". **Não tem as mesmas regras de negócio do v1** (não tem os formulários de Convite/Consulta de Preço — tem CTA "Baixar o app" com estado "em breve" e um form de contato de investidor via mailto). É um espelho estático pré-buildado, não código-fonte — ver `site-v2/README.md`.

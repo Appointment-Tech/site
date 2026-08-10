@@ -1,0 +1,1 @@
+var e=`/assets/A_site_imagem_tela_01-CFDUuRDQ.png`;export{e as t};

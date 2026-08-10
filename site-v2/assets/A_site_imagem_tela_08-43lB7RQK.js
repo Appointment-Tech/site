@@ -1,0 +1,1 @@
+var e=`/assets/A_site_imagem_tela_02-BxUZlNSR.png`,t=`/assets/A_site_imagem_tela_08-ugslsN_X.png`;export{e as n,t};

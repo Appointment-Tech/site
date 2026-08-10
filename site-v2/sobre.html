@@ -1,0 +1,239 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="preload" as="image" href="assets/a-logo-final-hGW_7E_g.png"/><link rel="stylesheet" href="assets/styles-Dvqf8O7S.css" data-precedence="default"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&amp;display=swap" data-precedence="default"/><title>Sobre nós — Appointment</title><meta name="theme-color" content="#902323"/><meta property="og:type" content="website"/><meta name="twitter:card" content="summary_large_image"/><meta name="description" content="Uma startup sediada em Curitiba, liderada por pessoas apaixonadas por tecnologia. Conheça o #TimeAppointment, nossa história e nossos compromissos."/><meta property="og:title" content="Sobre nós — Appointment"/><meta property="og:description" content="Quem somos, nossa história e o legado que queremos deixar."/><link rel="modulepreload" href="assets/index-Dx3AYAQV.js"/><link rel="modulepreload" href="assets/sobre-B_YsOgWi.js"/><link rel="modulepreload" href="assets/PageShell-CWqiieyE.js"/><link rel="icon" href="favicon.ico" type="image/x-icon"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+<style>
+	@font-face {
+		font-family: 'CameraPlainVariable';
+		src: url('https://cdn.gpteng.co/mcp-widgets/v1/fonts/CameraPlainVariable.woff2') format('woff2');
+		font-weight: 100 900;
+		font-style: normal;
+		font-display: swap;
+	}
+
+	#lovable-badge {
+		--badge-bg: #1b1b1b;
+		--badge-text: #c5c1b9;
+		--badge-text-hover: #dcdad5;
+		--badge-radius: 6px;
+		--badge-padding: 8px;
+		--badge-gap: 6px;
+		--badge-shadow: 
+			0 0 0 1px rgba(0, 0, 0, 0.88),
+			0 1px 0 0 rgba(0, 0, 0, 0.04),
+			0 2px 2px -1px rgba(0, 0, 0, 0.08),
+			0 4px 4px -2px rgba(0, 0, 0, 0.08),
+			0 8px 8px -4px rgba(0, 0, 0, 0.08),
+			0 16px 16px -8px rgba(0, 0, 0, 0.08);
+		--badge-transition-duration: 0.2s;
+		--badge-transition-easing: cubic-bezier(0.16, 1, 0.32, 1);
+		--focus-color: #575ECF;
+		--focus-offset: 2px;
+		--focus-width: 2px;
+		
+		position: fixed;
+		bottom: 12px;
+		right: 12px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		z-index: 1000000;
+		background-color: var(--badge-bg) !important;
+		color: var(--badge-text) !important;
+		border-radius: var(--badge-radius);
+		box-shadow: var(--badge-shadow) !important;
+		font-size: 12px;
+		font-family: CameraPlainVariable, "CameraPlainVariable Fallback", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-weight: 400 !important;
+		text-transform: none !important;
+		font-feature-settings: normal !important;
+		transform: translateZ(0);
+		will-change: transform, opacity;
+	}
+
+	#lovable-badge-cta {
+		display: flex;
+		align-items: center;
+		gap: var(--badge-gap);
+		padding: 0 var(--badge-padding);
+		height: 100%;
+		color: inherit;
+		text-decoration: none;
+		white-space: nowrap;
+		border-radius: var(--badge-radius) 0 0 var(--badge-radius);
+		transition: 
+			background-color var(--badge-transition-duration) ease,
+			color var(--badge-transition-duration) ease,
+			transform 0.1s ease;
+	}
+
+	#lovable-badge-cta:hover {
+		background: rgba(255, 255, 255, 0.04);
+		color: var(--badge-text-hover);
+	}
+
+	#lovable-badge-cta:active {
+		transform: scale(0.98);
+	}
+
+	#lovable-badge-cta:focus {
+		outline: none;
+	}
+
+	#lovable-badge-cta:focus-visible {
+		outline: var(--focus-width) solid var(--focus-color);
+		outline-offset: var(--focus-offset);
+		z-index: 1;
+	}
+
+	#lovable-badge-text {
+		line-height: 1;
+	}
+
+	#lovable-badge-divider {
+		width: 1px;
+		height: 24px;
+		background-color: rgba(255, 255, 255, 0.04);
+		flex-shrink: 0;
+	}
+
+	#lovable-badge-close {
+		width: 24px;
+		height: 24px;
+		min-width: 24px;
+		min-height: 24px;
+		cursor: pointer;
+		background: none;
+		border: none;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 0 var(--badge-radius) var(--badge-radius) 0;
+		flex-shrink: 0;
+		transition: 
+			background-color var(--badge-transition-duration) ease,
+			transform 0.1s ease;
+	}
+
+	#lovable-badge-close:hover {
+		background: rgba(255, 255, 255, 0.04);
+	}
+
+	#lovable-badge-close:active {
+		transform: scale(0.92);
+	}
+
+	#lovable-badge-close:focus {
+		outline: none;
+	}
+
+	#lovable-badge-close:focus-visible {
+		outline: var(--focus-width) solid var(--focus-color);
+		outline-offset: calc(var(--focus-offset) * -1);
+		z-index: 1;
+	}
+
+	#lovable-badge-close svg path {
+		fill: var(--badge-text);
+		transition: fill var(--badge-transition-duration) ease;
+	}
+
+	#lovable-badge-close:hover svg path {
+		fill: var(--badge-text-hover);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		#lovable-badge-cta,
+		#lovable-badge-close,
+		#lovable-badge-close svg path {
+			transition: none;
+		}
+		
+		#lovable-badge-cta:active,
+		#lovable-badge-close:active {
+			transform: none;
+		}
+	}
+
+	@media (prefers-contrast: high) {
+		#lovable-badge {
+			--badge-bg: #000;
+			--badge-text: #fff;
+			--badge-text-hover: #fff;
+			border: 2px solid currentColor;
+		}
+		
+		#lovable-badge-cta:focus-visible,
+		#lovable-badge-close:focus-visible {
+			outline-width: 3px;
+		}
+	}
+</style><meta name="twitter:title" content="Sobre nós — Appointment"><meta name="twitter:description" content="Quem somos, nossa história e o legado que queremos deixar."><meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/43b9defb-a4b7-411e-99d9-de38c7742505/id-preview-9b411025--a10ca242-59a6-45ee-b92e-d17b1e39c4e0.lovable.app-1783171886627.png"><meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/43b9defb-a4b7-411e-99d9-de38c7742505/id-preview-9b411025--a10ca242-59a6-45ee-b92e-d17b1e39c4e0.lovable.app-1783171886627.png"></head><body><!--$--><div class="flex min-h-screen flex-col bg-background"><header class="sticky top-0 z-50 transition-all border-b border-transparent bg-transparent"><div class="container-page flex h-16 items-center justify-between gap-6"><a aria-label="Appointment — início" href="index.html" class="shrink-0"><span class="inline-flex items-center gap-2.5 "><img src="assets/a-logo-final-hGW_7E_g.png" alt="Appointment" class="h-8 w-8 rounded-[9px] object-contain" width="32" height="32"/><span class="text-[1.15rem] font-semibold leading-none tracking-tight" style="font-family:Jost, ui-sans-serif, system-ui, sans-serif">appointment</span></span></a><nav class="hidden items-center gap-1 lg:flex"><a href="profissionais.html" class="rounded-full px-3 py-2 text-sm text-ink-soft transition-colors hover:text-ink">Para profissionais</a><a href="empresas.html" class="rounded-full px-3 py-2 text-sm text-ink-soft transition-colors hover:text-ink">Para empresas</a><a href="publico.html" class="rounded-full px-3 py-2 text-sm text-ink-soft transition-colors hover:text-ink">Para você</a><a class="rounded-full px-3 py-2 text-sm text-ink-soft transition-colors hover:text-ink text-ink font-medium bg-secondary/60" href="sobre.html" data-status="active" aria-current="page">Sobre</a><a href="investidores.html" class="rounded-full px-3 py-2 text-sm text-ink-soft transition-colors hover:text-ink">Investidores</a></nav><div class="hidden items-center gap-2 lg:flex"><a href="publico.html#baixar" class="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm text-primary-foreground transition-all hover:bg-[var(--appointment-primary-hover)] hover:-translate-y-0.5">Baixar o app<span aria-hidden="true">↓</span></a></div><button class="grid h-10 w-10 place-items-center rounded-full border border-border lg:hidden" aria-label="Abrir menu" aria-expanded="false"><span class="sr-only">Menu</span><div class="relative h-3 w-5"><span class="absolute left-0 top-0 h-0.5 w-5 bg-ink transition-transform "></span><span class="absolute bottom-0 left-0 h-0.5 w-5 bg-ink transition-transform "></span></div></button></div></header><main class="flex-1"><section class="container-page pt-14 pb-8 md:pt-20 md:pb-12"><p class="mb-5 inline-flex items-center gap-2 rounded-full border border-border/70 bg-card px-3 py-1 text-xs uppercase tracking-[0.18em] text-ink-soft animate-fade-up"><span aria-hidden="true" class="h-1.5 w-1.5 rounded-full bg-primary"></span>Sobre nós</p><h1 class="max-w-3xl text-balance font-serif text-4xl leading-[1.05] text-ink md:text-6xl animate-fade-up">Uma startup jovem, apaixonada por<!-- --> <em class="not-italic text-primary">tempo bem gasto.</em></h1><p class="mt-6 max-w-2xl text-pretty text-lg text-ink-soft animate-fade-up">Sediados em Curitiba-PR, unimos experiências de mercados diferentes com a vontade incansável de mudar o mundo — para que a sua vida seja melhor e mais fácil através do nosso produto.</p></section><section class="container-page pb-16 md:pb-24"><div class="mb-10 flex flex-wrap items-end justify-between gap-4"><p class="text-xs uppercase tracking-[0.2em] text-ink-soft">#TimeAppointment</p><p class="max-w-md text-sm text-ink-soft">Aliamos experiência em vários mercados com a vontade de produzir soluções que facilitem a vida das pessoas.</p></div><div class="grid gap-6 md:grid-cols-3"><article class="reveal overflow-hidden rounded-3xl border border-border/70 bg-card"><div class="aspect-[4/5] w-full overflow-hidden bg-secondary"><img src="assets/alexis-D3atIZ7t.jpeg" alt="Alexis Pan, Fundador e CEO" loading="lazy" class="h-full w-full object-cover"/></div><div class="p-6"><h3 class="font-serif text-2xl text-ink">Alexis Pan</h3><p class="text-sm text-primary">Fundador e CEO</p><p class="mt-4 text-sm text-ink-soft">Engenheiro apaixonado por tecnologia, com a missão de deixar um legado. Pai de dois filhos, quer que o Appointment ajude muitas pessoas a ganhar qualidade de vida com tempo bem administrado.</p></div></article><article class="reveal overflow-hidden rounded-3xl border border-border/70 bg-card"><div class="aspect-[4/5] w-full overflow-hidden bg-secondary"><img src="__l5e/assets-v1/e3e98082-2adc-42f4-9aa0-bc8bde66057a/leandro-new.png" alt="Leandro Nascimento, Fundador e CTO" loading="lazy" class="h-full w-full object-cover"/></div><div class="p-6"><h3 class="font-serif text-2xl text-ink">Leandro Nascimento</h3><p class="text-sm text-primary">Fundador e CTO</p><p class="mt-4 text-sm text-ink-soft">Carioca apaixonado por Curitiba. Engenheiro de software que acredita que a tecnologia evolui para facilitar a vida das pessoas — e que o Appointment tem tudo para cumprir essa missão.</p></div></article><article class="reveal overflow-hidden rounded-3xl border border-border/70 bg-card"><div class="aspect-[4/5] w-full overflow-hidden bg-secondary"><img src="assets/victor-BJp34fhp.jpeg" alt="Victor Silva, Co-fundador e CHXO" loading="lazy" class="h-full w-full object-cover"/></div><div class="p-6"><h3 class="font-serif text-2xl text-ink">Victor Silva</h3><p class="text-sm text-primary">Co-fundador e CHXO</p><p class="mt-4 text-sm text-ink-soft">Administrador pós-graduado, sempre presente no mundo das startups. Foi um dos fundadores e diretores da primeira startup do Sul do Brasil a se tornar unicórnio.</p></div></article></div></section><section class="border-y border-border/60 bg-cream-warm"><div class="container-page py-20"><div class="mb-14 max-w-2xl"><p class="text-xs uppercase tracking-[0.2em] text-ink-soft">Nossa história</p><h2 class="mt-3 text-balance font-serif text-3xl leading-tight md:text-5xl">Um pouquinho da nossa jornada.</h2></div><ol class="relative grid gap-10 md:grid-cols-2"><li class="reveal flex gap-6 rounded-2xl border border-border/70 bg-card p-6"><div class="font-serif text-4xl text-primary md:text-5xl">2016</div><div><h3 class="font-serif text-xl text-ink">O surgimento da ideia</h3><p class="mt-2 text-sm text-ink-soft">Alexis Pan procura uma solução que una agendamento online e pagamento pelo serviço. Não existia. Nasce o projeto Book&amp;Pay.</p></div></li><li class="reveal flex gap-6 rounded-2xl border border-border/70 bg-card p-6"><div class="font-serif text-4xl text-primary md:text-5xl">2017</div><div><h3 class="font-serif text-xl text-ink">Mudança de rumo</h3><p class="mt-2 text-sm text-ink-soft">Conversas com quem trabalha com horário agendado revelam a dor real: vacância e no-show. O produto é revisado.</p></div></li><li class="reveal flex gap-6 rounded-2xl border border-border/70 bg-card p-6"><div class="font-serif text-4xl text-primary md:text-5xl">2019</div><div><h3 class="font-serif text-xl text-ink">Revisão estratégica</h3><p class="mt-2 text-sm text-ink-soft">Com dois colegas experientes em startups, o projeto passa por uma grande reformulação e ganha o nome Appointment.</p></div></li><li class="reveal flex gap-6 rounded-2xl border border-border/70 bg-card p-6"><div class="font-serif text-4xl text-primary md:text-5xl">2020</div><div><h3 class="font-serif text-xl text-ink">A pandemia</h3><p class="mt-2 text-sm text-ink-soft">O lockdown zera atendimentos presenciais e não faz sentido lançar naquele ano. O projeto entra em stand-by por 2 anos.</p></div></li><li class="reveal flex gap-6 rounded-2xl border border-border/70 bg-card p-6"><div class="font-serif text-4xl text-primary md:text-5xl">2022</div><div><h3 class="font-serif text-xl text-ink">A retomada e o kick off</h3><p class="mt-2 text-sm text-ink-soft">Com o retorno das atividades presenciais e dois novos sócios, começa o desenvolvimento com um time de alto nível.</p></div></li><li class="reveal flex gap-6 rounded-2xl border border-border/70 bg-card p-6"><div class="font-serif text-4xl text-primary md:text-5xl">2023</div><div><h3 class="font-serif text-xl text-ink">Um sonho vira realidade</h3><p class="mt-2 text-sm text-ink-soft">Confiança de microinvestidores, dedicação e vontade de mudar o mundo. A primeira versão do Appointment sai do forno.</p></div></li></ol></div></section><section class="container-page py-20 md:py-28"><div class="mb-14 max-w-2xl"><p class="text-xs uppercase tracking-[0.2em] text-ink-soft">Compromissos</p><h2 class="mt-3 text-balance font-serif text-3xl leading-tight md:text-5xl">Queremos deixar uma pegada positiva.</h2><p class="mt-6 max-w-xl text-ink-soft">O Appointment tem um objetivo maior com o mundo. Assumimos alguns compromissos para que nossa jornada seja o mais positiva possível para todos.</p></div><div class="grid gap-x-10 gap-y-14 md:grid-cols-3"><article class="reveal"><span class="font-serif text-3xl text-primary">0<!-- -->1</span><h3 class="mt-4 font-serif text-2xl text-ink">Humanos antes de clientes</h3><p class="mt-3 text-ink-soft">Nos preocupamos com a experiência de todas as pessoas — colaboradores, clientes e usuários. Antes de qualquer papel, são seres humanos. Por isso, nosso setor é chamado de Human Experience (HX).</p></article><article class="reveal"><span class="font-serif text-3xl text-primary">0<!-- -->2</span><h3 class="mt-4 font-serif text-2xl text-ink">Deixar um legado positivo</h3><p class="mt-3 text-ink-soft">Queremos que o impacto do Appointment se revele em muitas formas: mais tempo com quem se ama, atendimentos melhores, negócios mais saudáveis, comunidades mais atendidas.</p></article><article class="reveal"><span class="font-serif text-3xl text-primary">0<!-- -->3</span><h3 class="mt-4 font-serif text-2xl text-ink">Crescer com responsabilidade</h3><p class="mt-3 text-ink-soft">Nosso planejamento é sustentável e transparente. Metas claras, break-even bem definido em cada etapa e cuidado com o dinheiro de quem investe conosco.</p></article></div></section></main><footer class="mt-24 border-t border-border/70 bg-ink text-cream"><div class="container-page grid gap-14 py-20 md:grid-cols-[1.3fr_1fr_1fr_1fr]"><div><span class="inline-flex items-center gap-2.5 text-cream"><img src="assets/a-logo-final-hGW_7E_g.png" alt="Appointment" class="h-8 w-8 rounded-[9px] object-contain" width="32" height="32"/><span class="text-[1.15rem] font-semibold leading-none tracking-tight" style="font-family:Jost, ui-sans-serif, system-ui, sans-serif">appointment</span></span><p class="mt-6 max-w-sm text-sm text-cream/70">Nascido em 2023, após 6 anos de pesquisa e maturação. O Appointment devolve às pessoas o ganho mais valioso do nosso tempo: qualidade de vida.</p><a href="https://www.instagram.com/appointment.tech" target="_blank" rel="noreferrer" class="mt-6 inline-flex items-center gap-2 text-sm text-cream/80 underline-offset-4 hover:underline">Siga no Instagram →</a></div><div><h4 class="mb-4 text-sm font-medium">Produto</h4><ul class="space-y-2 text-sm text-cream/70"><li><a href="profissionais.html" class="hover:text-cream">Profissionais</a></li><li><a href="empresas.html" class="hover:text-cream">Empresas</a></li><li><a href="publico.html" class="hover:text-cream">Para você</a></li></ul></div><div><h4 class="mb-4 text-sm font-medium">Empresa</h4><ul class="space-y-2 text-sm text-cream/70"><li><a class="hover:text-cream active" href="sobre.html" data-status="active" aria-current="page">Sobre nós</a></li><li><a href="investidores.html" class="hover:text-cream">Investidores</a></li></ul></div><div><h4 class="mb-4 text-sm font-medium">Contato</h4><a href="mailto:contato@appointment.com.br" class="block text-sm text-cream/70 hover:text-cream">contato@appointment.com.br</a><p class="mt-2 text-sm text-cream/60">Curitiba — PR, Brasil</p></div></div><div class="border-t border-cream/10"><div class="container-page flex flex-wrap items-center justify-between gap-3 py-6 text-xs text-cream/50"><span>© 2023 Appointment Tecnologia da Informação Ltda. · CNPJ 47.457.766/0001-63</span><span>Todos os direitos reservados.</span></div></div></footer></div><script>(function(a,f){let l;try{l=JSON.parse(sessionStorage.getItem(a)||"{}")}catch{return}const n=l?.[f||history.state?.__TSR_key];let c=!1;for(const t in n){const e=n[t],o=e?.scrollX,s=e?.scrollY;if(Number.isFinite(o)&&Number.isFinite(s)){if(t==="window")scrollTo(o,s),c=!0;else if(t)try{const r=document.querySelector(t);r&&(r.scrollLeft=o,r.scrollTop=s)}catch{}}}if(c)return;const i=location.hash.slice(1);if(i){const t=history.state?.__hashScrollIntoViewOptions??!0;if(t){const e=document.getElementById(i);e&&e.scrollIntoView(t)}return}scrollTo(0,0)})("tsr-scroll-restoration-v1_3");document.currentScript.remove()</script><!--/$--><script class="$tsr" id="$tsr-stream-barrier">(self.$R=self.$R||{})["tsr"]=[];self.$_TSR={h(){this.hydrated=!0,this.c()},e(){this.streamEnded=!0,this.c()},c(){this.hydrated&&this.streamEnded&&(delete self.$_TSR,delete self.$R.tsr)},p(e){this.initialized?e():this.buffer.push(e)},buffer:[]};$_TSR.router=($R=>$R[0]={manifest:$R[1]={routes:$R[2]={__root__:$R[3]={preloads:$R[4]=["/assets/index-Dx3AYAQV.js"],scripts:$R[5]=[$R[6]={attrs:$R[7]={type:"module",async:!0,src:"/assets/index-Dx3AYAQV.js"}}]},"/sobre":$R[8]={preloads:$R[9]=["/assets/sobre-B_YsOgWi.js","/assets/PageShell-CWqiieyE.js"]}}},matches:$R[10]=[$R[11]={i:"__root__ ",u:1786392881220,s:"success",ssr:!0},$R[12]={i:" sobre sobre",u:1786392881220,s:"success",ssr:!0}],lastMatchId:" sobre sobre"})($R["tsr"]);$_TSR.e();document.currentScript.remove()</script><script type="module" async="" src="assets/index-Dx3AYAQV.js"></script>
+<aside
+	id="lovable-badge"
+	role="complementary"
+	dir="ltr"
+	lang="en"
+	aria-label="Edit with Lovable">
+	<a
+		id="lovable-badge-cta" 
+		target="_blank" 
+		href="https://lovable.dev/projects/lovp_0n9tzdqxjz8w0rv29xq692tmkh?utm_source=lovable-badge"
+		rel="noopener nofollow"
+		aria-label="Edit with Lovable">
+		<span id="lovable-badge-text">Edit with</span>
+		<svg xmlns="http://www.w3.org/2000/svg" width="52" height="16" fill="none" viewBox="0 0 52 16">
+  <path fill="#FCFBF8" fill-rule="evenodd" d="M20.318 5.25c.643 0 1.206.14 1.69.418a2.81 2.81 0 0 1 1.118 1.191c.266.513.4 1.115.4 1.807s-.134 1.296-.4 1.812a2.81 2.81 0 0 1-1.118 1.193c-.484.278-1.047.418-1.69.418s-1.208-.14-1.695-.418a2.85 2.85 0 0 1-1.125-1.193c-.262-.516-.393-1.12-.393-1.812s.131-1.294.393-1.807a2.848 2.848 0 0 1 1.125-1.191c.487-.279 1.052-.418 1.695-.418Zm0 1.425c-.27 0-.504.076-.7.228-.193.147-.34.37-.443.67-.102.295-.153.66-.153 1.093 0 .435.05.801.153 1.1.102.3.25.524.443.676.196.147.43.22.7.22.27 0 .502-.073.694-.22.193-.152.341-.375.443-.67.103-.299.153-.667.153-1.106 0-.65-.112-1.145-.337-1.481a1.08 1.08 0 0 0-.953-.51ZM32.7 5.25c.61 0 1.127.1 1.549.3.422.197.74.48.953.849.217.368.325.809.325 1.32v2.704c0 .29.02.562.062.812.044.245.108.4.19.466V12h-1.935a5.895 5.895 0 0 1-.105-.684 7.745 7.745 0 0 1-.02-.228 2.293 2.293 0 0 1-.151.203c-.205.242-.47.437-.793.584-.32.143-.685.215-1.094.215-.406 0-.77-.08-1.094-.24a1.845 1.845 0 0 1-.756-.682 1.984 1.984 0 0 1-.27-1.045c0-.606.178-1.069.535-1.388.356-.324.87-.534 1.542-.633l1.125-.16c.225-.032.403-.074.534-.123a.622.622 0 0 0 .288-.196.549.549 0 0 0 .093-.327.65.65 0 0 0-.11-.367.702.702 0 0 0-.32-.27c-.14-.07-.31-.105-.51-.105-.32 0-.576.083-.768.251-.193.164-.298.39-.314.676h-1.923c.016-.434.147-.82.393-1.155.25-.34.596-.604 1.039-.792.442-.189.954-.283 1.535-.283Zm.99 3.498a.98.98 0 0 1-.215.14 2.49 2.49 0 0 1-.584.178l-.473.092c-.315.061-.553.156-.713.283-.155.127-.233.305-.233.534 0 .23.084.412.252.547.168.135.383.203.645.203s.494-.058.694-.173c.201-.118.355-.282.461-.49.11-.21.166-.448.166-.714v-.6Zm4.526-2.375c.065-.125.138-.243.221-.349.197-.25.437-.44.719-.571.282-.135.6-.203.952-.203.528 0 .988.138 1.377.412.389.275.688.67.896 1.186.21.512.314 1.12.314 1.824 0 .7-.107 1.309-.32 1.825-.213.512-.518.906-.915 1.18-.393.275-.854.412-1.383.412-.352 0-.667-.062-.946-.184a1.832 1.832 0 0 1-.7-.554 2.2 2.2 0 0 1-.234-.383V12h-1.843V3h1.862v3.373Zm1.284.296c-.274 0-.51.085-.707.253-.192.163-.338.397-.436.7a3.376 3.376 0 0 0-.148 1.05c0 .406.05.759.148 1.058.098.299.243.53.436.694.197.164.433.246.707.246.279 0 .512-.082.7-.246.193-.164.336-.395.43-.694.099-.3.148-.652.148-1.058 0-.405-.05-.757-.147-1.056-.095-.299-.238-.53-.43-.694a1.015 1.015 0 0 0-.7-.253Zm9.416-1.419c.602 0 1.136.131 1.604.393.466.262.829.643 1.086 1.143.263.5.394 1.097.394 1.794 0 .25-.002.449-.006.596H47.51c.018.288.071.538.164.75a1.3 1.3 0 0 0 .491.596c.214.13.465.196.757.196.319 0 .583-.082.792-.246.209-.167.34-.403.393-.706h1.862a2.48 2.48 0 0 1-.485 1.235 2.54 2.54 0 0 1-1.051.805c-.439.188-.949.283-1.53.283-.655 0-1.225-.125-1.708-.375a2.672 2.672 0 0 1-1.13-1.143c-.267-.508-.4-1.137-.4-1.887 0-.712.14-1.327.418-1.843a2.86 2.86 0 0 1 1.155-1.186c.491-.27 1.051-.405 1.678-.405Zm-.044 1.345c-.274 0-.516.068-.725.203a1.29 1.29 0 0 0-.479.59 2.045 2.045 0 0 0-.132.498h2.562a1.873 1.873 0 0 0-.138-.602 1.061 1.061 0 0 0-.418-.516 1.243 1.243 0 0 0-.67-.173Z" clip-rule="evenodd"/>
+  <path fill="#FCFBF8" d="m26.605 9.995 1.342-4.566h1.924L27.628 12h-2.07l-2.33-6.57h1.98l1.397 4.565Zm-13.013.143h2.256c1.632 0 1.421 1.837 1.418 1.861h-5.603V3h1.93v7.138Zm31.516 1.861h-1.862V3h1.862v8.999Z"/>
+  <path fill="url(#a)" fill-rule="evenodd" d="M2.7 3c1.492 0 2.7 1.192 2.7 2.663v1.012h.9c1.49 0 2.7 1.192 2.7 2.662S7.791 12 6.3 12H0V5.663C0 4.193 1.209 3 2.7 3Z" clip-rule="evenodd"/>
+  <defs>
+    <radialGradient id="a" cx="0" cy="0" r="1" gradientTransform="matrix(-1.54236 7.07838 -10.231 -2.15602 4.627 5.022)" gradientUnits="userSpaceOnUse">
+      <stop offset=".106" stop-color="#FE7B02"/>
+      <stop offset=".394" stop-color="#FE3F21"/>
+      <stop offset=".608" stop-color="#F858BC"/>
+      <stop offset=".929" stop-color="#575ECF"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+
+	</a>
+	
+	<span id="lovable-badge-divider" aria-hidden="true"></span>
+	
+	<button 
+		id="lovable-badge-close"
+		aria-label="Dismiss"
+		title="Dismiss"
+		type="button">
+		<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true">
+			<path d="M10.646 4.646a.5.5 0 1 1 .707.708L8.707 8l2.646 2.646a.5.5 0 1 1-.707.707L8 8.707l-2.646 2.646a.5.5 0 1 1-.708-.707L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708L8 7.293l2.646-2.647Z"/>
+		</svg>
+	</button>
+</aside>
+<script>
+	// Don't show the lovable-badge if the page is in an iframe or if it's being rendered by puppeteer (screenshot service)
+	if (window.self !== window.top || navigator.userAgent.includes('puppeteer')) {
+		var badge = document.getElementById('lovable-badge');
+		if (badge) {
+			badge.style.display = 'none';
+		}
+	}
+
+	// Add click event listener to close button with animation
+	var closeButton = document.getElementById('lovable-badge-close');
+	if (closeButton) {
+		closeButton.addEventListener('click', function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+			var badge = document.getElementById('lovable-badge');
+			if (badge) {
+				badge.classList.add('closing');
+				setTimeout(function() {
+					if (badge) {
+						badge.style.display = 'none';
+					}
+				}, 240);
+			}
+		});
+	}
+</script>
+</body></html>
