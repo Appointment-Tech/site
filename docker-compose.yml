@@ -1,0 +1,22 @@
+services:
+  site:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:3101:3000"
+    volumes:
+      - site_leads:/data/leads
+
+  site-v2:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3102:80"
+
+volumes:
+  site_leads:

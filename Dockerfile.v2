@@ -1,0 +1,9 @@
+# v2 — static mirror (see site-v2/README.md). No build step: it's already
+# rendered HTML/CSS/JS/images, just needs a file server with clean-URL
+# fallback for the hydrated TanStack Router's client-side navigation.
+FROM nginx:1.27-alpine
+
+COPY nginx.v2.conf /etc/nginx/conf.d/default.conf
+COPY site-v2/ /usr/share/nginx/html/
+
+EXPOSE 80
