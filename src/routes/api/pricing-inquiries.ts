@@ -1,4 +1,4 @@
-import { createServerFileRoute } from "@tanstack/react-start/server";
+import { createFileRoute } from "@tanstack/react-router";
 import { escapeHtml, notifyLead } from "@/lib/leads.server";
 
 interface PricingInquiryPayload {
@@ -37,29 +37,35 @@ function validate(body: unknown): { data: PricingInquiryPayload } | { error: str
   return { data: { nome, email, whatsapp, atividade, porte, mensagem: mensagemRaw } };
 }
 
-export const ServerRoute = createServerFileRoute("/api/pricing-inquiries").methods({
-  POST: async ({ request }) => {
-    const body = await request.json().catch(() => null);
-    const result = validate(body);
-    if ("error" in result) {
-      return Response.json({ ok: false, error: result.error }, { status: 400 });
-    }
+// API-only route — see src/routes/api/invites.ts for why this is a plain
+// createFileRoute with a `server.handlers` config, not createServerFileRoute.
+export const Route = createFileRoute("/api/pricing-inquiries")({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        const body = await request.json().catch(() => null);
+        const result = validate(body);
+        if ("error" in result) {
+          return Response.json({ ok: false, error: result.error }, { status: 400 });
+        }
 
-    const { data } = result;
-    await notifyLead({
-      kind: "pricing-inquiries",
-      subject: `Nova consulta de preço — ${data.nome} (${data.atividade})`,
-      html: `
-        <p><strong>Nome:</strong> ${escapeHtml(data.nome)}</p>
-        <p><strong>E-mail:</strong> ${escapeHtml(data.email)}</p>
-        <p><strong>WhatsApp:</strong> ${escapeHtml(data.whatsapp)}</p>
-        <p><strong>Atividade:</strong> ${escapeHtml(data.atividade)}</p>
-        <p><strong>Porte:</strong> ${escapeHtml(data.porte)}</p>
-        <p><strong>Mensagem:</strong> ${data.mensagem ? escapeHtml(data.mensagem) : "<em>(vazia)</em>"}</p>
-      `.trim(),
-      payload: data,
-    });
+        const { data } = result;
+        await notifyLead({
+          kind: "pricing-inquiries",
+          subject: `Nova consulta de preço — ${data.nome} (${data.atividade})`,
+          html: `
+            <p><strong>Nome:</strong> ${escapeHtml(data.nome)}</p>
+            <p><strong>E-mail:</strong> ${escapeHtml(data.email)}</p>
+            <p><strong>WhatsApp:</strong> ${escapeHtml(data.whatsapp)}</p>
+            <p><strong>Atividade:</strong> ${escapeHtml(data.atividade)}</p>
+            <p><strong>Porte:</strong> ${escapeHtml(data.porte)}</p>
+            <p><strong>Mensagem:</strong> ${data.mensagem ? escapeHtml(data.mensagem) : "<em>(vazia)</em>"}</p>
+          `.trim(),
+          payload: data,
+        });
 
-    return Response.json({ ok: true });
+        return Response.json({ ok: true });
+      },
+    },
   },
 });

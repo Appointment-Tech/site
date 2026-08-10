@@ -1,4 +1,4 @@
-import { createServerFileRoute } from "@tanstack/react-start/server";
+import { createFileRoute } from "@tanstack/react-router";
 import { escapeHtml, notifyLead } from "@/lib/leads.server";
 
 type Perfil = "profissional" | "empresa" | "cliente";
@@ -39,28 +39,36 @@ function validate(body: unknown): { data: InvitePayload } | { error: string } {
   return { data: { nome, email, whatsapp, perfil, sistema_operacional: os } };
 }
 
-export const ServerRoute = createServerFileRoute("/api/invites").methods({
-  POST: async ({ request }) => {
-    const body = await request.json().catch(() => null);
-    const result = validate(body);
-    if ("error" in result) {
-      return Response.json({ ok: false, error: result.error }, { status: 400 });
-    }
+// API-only route: no `component`, so this never renders a page — see
+// @tanstack/start-server-core's handleServerRoutes, which reads
+// `route.options.server.handlers` directly off a normal createFileRoute
+// Route (there is no separate createServerFileRoute in this version).
+export const Route = createFileRoute("/api/invites")({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        const body = await request.json().catch(() => null);
+        const result = validate(body);
+        if ("error" in result) {
+          return Response.json({ ok: false, error: result.error }, { status: 400 });
+        }
 
-    const { data } = result;
-    await notifyLead({
-      kind: "invites",
-      subject: `Novo convite — ${data.nome} (${data.perfil})`,
-      html: `
-        <p><strong>Nome:</strong> ${escapeHtml(data.nome)}</p>
-        <p><strong>E-mail:</strong> ${escapeHtml(data.email)}</p>
-        <p><strong>WhatsApp:</strong> ${escapeHtml(data.whatsapp)}</p>
-        <p><strong>Quero usar como:</strong> ${escapeHtml(data.perfil)}</p>
-        <p><strong>Sistema operacional:</strong> ${escapeHtml(data.sistema_operacional)}</p>
-      `.trim(),
-      payload: data,
-    });
+        const { data } = result;
+        await notifyLead({
+          kind: "invites",
+          subject: `Novo convite — ${data.nome} (${data.perfil})`,
+          html: `
+            <p><strong>Nome:</strong> ${escapeHtml(data.nome)}</p>
+            <p><strong>E-mail:</strong> ${escapeHtml(data.email)}</p>
+            <p><strong>WhatsApp:</strong> ${escapeHtml(data.whatsapp)}</p>
+            <p><strong>Quero usar como:</strong> ${escapeHtml(data.perfil)}</p>
+            <p><strong>Sistema operacional:</strong> ${escapeHtml(data.sistema_operacional)}</p>
+          `.trim(),
+          payload: data,
+        });
 
-    return Response.json({ ok: true });
+        return Response.json({ ok: true });
+      },
+    },
   },
 });
