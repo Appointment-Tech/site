@@ -20,6 +20,7 @@ Glossário e decisões de escopo para o redesign da landing page e páginas sat�
 - Stack alvo: **React + Vite**, buildado e servido por um único serviço **Node/Express** dentro de um container Docker (mesmo container serve os assets estáticos e a API dos formulários).
 - Deploy no **mesmo droplet DigitalOcean da produção do Appointment** (`appointment-prod`, `143.110.153.41`, host `appointment-debian-s-1vcpu-2gb-sfo3-01`) — hoje esse droplet serve o site como HTML estático via Apache; troca só o apontamento do proxy pro novo container.
 - Notificação de lead por e-mail via Resend — ver [ADR 0001](docs/adr/0001-notificacao-de-leads-por-email-sem-banco.md). Credenciais em `.env` (fora do git, ver `.env.example`).
+- `/api/invites` e `/api/pricing-inquiries` são **server routes nativas do TanStack Start** (`createServerFileRoute(...).methods({...})`, `src/routes/api/*.ts`) — mesmo processo Node que serve as páginas, sem container/porta extra. **Não validado por build real** (esta máquina não tem Node/Docker utilizável localmente) — a primeira validação de que a API compila é o `docker build` no droplet, durante o deploy.
 
 ## v1 vs v2
 
