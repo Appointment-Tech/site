@@ -11,8 +11,16 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { Preloader } from "@/components/site/Preloader";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
+import {
+  PRELOADER_NOSCRIPT_CSS,
+  PRELOADER_STYLE_ID,
+  PRELOADING_CLASS,
+  preloaderCss,
+} from "@/lib/preloader/markup";
+import { V1_THEME } from "@/lib/preloader/theme";
 
 function NotFoundComponent() {
   return (
@@ -86,6 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "O Appointment conecta profissionais e clientes: marcar um horário fica tão fácil quanto mandar uma mensagem, com pagamento por cartão ou PIX no próprio app.",
       },
       { name: "author", content: "Appointment" },
+      { name: "theme-color", content: V1_THEME.background },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -108,11 +117,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={PRELOADING_CLASS}>
       <head>
         <HeadContent />
+        {/* Inline, not a stylesheet link: the loading screen has to paint on
+            the first frame, before styles.css has even been requested. */}
+        <style
+          id={PRELOADER_STYLE_ID}
+          dangerouslySetInnerHTML={{ __html: preloaderCss(V1_THEME) }}
+        />
+        <noscript>
+          <style dangerouslySetInnerHTML={{ __html: PRELOADER_NOSCRIPT_CSS }} />
+        </noscript>
       </head>
       <body>
+        {/* First element of the body: on a slow connection the overlay is on
+            screen while the rest of the document is still streaming in. */}
+        <Preloader />
         {children}
         <Scripts />
       </body>
