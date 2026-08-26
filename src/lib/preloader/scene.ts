@@ -177,7 +177,9 @@ export function createPreloaderScene(
     camera.bottom = -height / 2;
     camera.updateProjectionMatrix();
 
-    radius = clamp(Math.min(width, height) * 0.26, 104, 210);
+    // Floor of 128 px: below that the ring closes in on the counter and the
+    // "carregando" label starts crossing it on narrow phones.
+    radius = clamp(Math.min(width, height) * 0.3, 128, 210);
     ringGroup.scale.setScalar(radius);
     track.geometry.dispose();
     track.geometry = new THREE.RingGeometry(1 - 1.2 / radius, 1 + 1.2 / radius, 180);

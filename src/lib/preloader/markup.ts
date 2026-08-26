@@ -72,7 +72,7 @@ export function preloaderCss(theme: PreloaderTheme): string {
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  width: min(72vw, calc(var(--appt-pl-r) * 1.3));
+  width: min(70vw, calc(var(--appt-pl-r) * 1.25));
   text-align: center;
 }
 #${PRELOADER_ID} .appt-pl__logo {
@@ -119,7 +119,7 @@ export function preloaderCss(theme: PreloaderTheme): string {
 }
 #${PRELOADER_ID} .appt-pl__label {
   margin: 0;
-  font-size: 0.72rem;
+  font-size: clamp(0.6rem, 2.4vmin, 0.72rem);
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
