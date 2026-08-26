@@ -6,6 +6,17 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+// Passed as a variable, not inline: the wrapper's nitro typing only lists
+// preset/output/cloudflare, but the whole object is forwarded to nitro, which
+// does honour compressPublicAssets (the build emits .gz/.br next to each asset).
+const nitro = {
+  preset: "node-server",
+  // The loading screen pulls three as its own chunk (~700 kB raw). Nitro
+  // pre-compresses the public assets at build time and serves the .gz/.br
+  // variants, which the Node server does not do on its own.
+  compressPublicAssets: { gzip: true, brotli: true },
+};
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
@@ -15,7 +26,5 @@ export default defineConfig({
   // Inside a Lovable build this is forced to Cloudflare regardless of what's set
   // here; outside it (our Docker build on appointment-prod) this is what takes
   // effect — a plain Node server we run ourselves, no Cloudflare Workers involved.
-  nitro: {
-    preset: "node-server",
-  },
+  nitro,
 });

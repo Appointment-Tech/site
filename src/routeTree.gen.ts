@@ -15,6 +15,8 @@ import { Route as InvestidoresRouteImport } from './routes/investidores'
 import { Route as ProfissionaisRouteImport } from './routes/profissionais'
 import { Route as PublicoRouteImport } from './routes/publico'
 import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as ApiInvitesRouteImport } from './routes/api/invites'
+import { Route as ApiPricingInquiriesRouteImport } from './routes/api/pricing-inquiries'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +48,16 @@ const SobreRoute = SobreRouteImport.update({
   path: '/sobre',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInvitesRoute = ApiInvitesRouteImport.update({
+  id: '/api/invites',
+  path: '/api/invites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPricingInquiriesRoute = ApiPricingInquiriesRouteImport.update({
+  id: '/api/pricing-inquiries',
+  path: '/api/pricing-inquiries',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +66,8 @@ export interface FileRoutesByFullPath {
   '/profissionais': typeof ProfissionaisRoute
   '/publico': typeof PublicoRoute
   '/sobre': typeof SobreRoute
+  '/api/invites': typeof ApiInvitesRoute
+  '/api/pricing-inquiries': typeof ApiPricingInquiriesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +76,8 @@ export interface FileRoutesByTo {
   '/profissionais': typeof ProfissionaisRoute
   '/publico': typeof PublicoRoute
   '/sobre': typeof SobreRoute
+  '/api/invites': typeof ApiInvitesRoute
+  '/api/pricing-inquiries': typeof ApiPricingInquiriesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +87,8 @@ export interface FileRoutesById {
   '/profissionais': typeof ProfissionaisRoute
   '/publico': typeof PublicoRoute
   '/sobre': typeof SobreRoute
+  '/api/invites': typeof ApiInvitesRoute
+  '/api/pricing-inquiries': typeof ApiPricingInquiriesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +99,8 @@ export interface FileRouteTypes {
     | '/profissionais'
     | '/publico'
     | '/sobre'
+    | '/api/invites'
+    | '/api/pricing-inquiries'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +109,8 @@ export interface FileRouteTypes {
     | '/profissionais'
     | '/publico'
     | '/sobre'
+    | '/api/invites'
+    | '/api/pricing-inquiries'
   id:
     | '__root__'
     | '/'
@@ -97,6 +119,8 @@ export interface FileRouteTypes {
     | '/profissionais'
     | '/publico'
     | '/sobre'
+    | '/api/invites'
+    | '/api/pricing-inquiries'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +130,8 @@ export interface RootRouteChildren {
   ProfissionaisRoute: typeof ProfissionaisRoute
   PublicoRoute: typeof PublicoRoute
   SobreRoute: typeof SobreRoute
+  ApiInvitesRoute: typeof ApiInvitesRoute
+  ApiPricingInquiriesRoute: typeof ApiPricingInquiriesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -152,6 +178,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SobreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/invites': {
+      id: '/api/invites'
+      path: '/api/invites'
+      fullPath: '/api/invites'
+      preLoaderRoute: typeof ApiInvitesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pricing-inquiries': {
+      id: '/api/pricing-inquiries'
+      path: '/api/pricing-inquiries'
+      fullPath: '/api/pricing-inquiries'
+      preLoaderRoute: typeof ApiPricingInquiriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,7 +202,19 @@ const rootRouteChildren: RootRouteChildren = {
   ProfissionaisRoute: ProfissionaisRoute,
   PublicoRoute: PublicoRoute,
   SobreRoute: SobreRoute,
+  ApiInvitesRoute: ApiInvitesRoute,
+  ApiPricingInquiriesRoute: ApiPricingInquiriesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

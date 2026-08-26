@@ -28,6 +28,17 @@ Glossário e decisões de escopo para o redesign da landing page e páginas sat�
 
 Pendência conhecida: o texto de `politica-de-privacidade.html` se autorreferencia como `https://marcaumappointment.com/politica-de-privacidade` (sem `.html`) — não configurei essa rota extensionless, só o `.html` original. Verificar se algo realmente depende dessa URL exata antes de considerar resolvido.
 
+## Tela de carregamento (preloader)
+
+As duas versões abrem com a **mesma tela de carregamento**: fundo no vermelho da própria versão (v1 no bordô `#81000d` do `--primary`; v2 no `#902323` do `--appointment-primary`), logo ao centro, **contador de 0 a 100%** e um anel de progresso em **three.js** girando em volta.
+
+Decisões:
+
+- **O vermelho aparece no primeiro frame, sem JavaScript** — quem pinta é `html.appt-preloading::before` (CSS inline no `<head>`), não o elemento da tela. Assim o site nunca pisca o conteúdo antes de o loader cobrir.
+- **A porcentagem é medida, não cronometrada.** Vem de sinais reais: quantos assets declarados pelo documento já apareceram no Resource Timing, mais `DOMContentLoaded`, `document.fonts.ready` e o evento `load`. Chega a 100% só quando os portões fecham. Imagem `loading=lazy` fora da tela fica **de fora da conta** (o loader trava o scroll, então ela nunca carregaria) e há teto de 12 s — ninguém fica preso atrás da tela.
+- **three é enfeite, não requisito.** O contador e a barra funcionam sem WebGL e sem o bundle da engine; quando o three chega, o anel entra e a barra some. Sem WebGL, a barra continua.
+- **Um código só para as duas versões** (`src/lib/preloader/`): v1 renderiza a marcação no SSR e importa three como chunk separado; v2, que é espelho estático, recebe o mesmo HTML/CSS/JS injetado por `npm run build:v2-preloader`.
+
 ## v1 vs v2
 
 O repo hospeda **duas versões** do site, decisão do Leandro em 10/08 (ele gostou de dois designs diferentes gerados no Lovable):
