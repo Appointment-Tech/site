@@ -31,4 +31,14 @@ wget --mirror --page-requisites --convert-links --adjust-extension \
   https://appointment-v2.lovable.app/
 ```
 
-Depois repita a limpeza do `~flock.js` (ver histórico do commit que criou este README).
+Depois repita a limpeza do `~flock.js` (ver histórico do commit que criou este README) **e rode `npm run build:v2-preloader`** — o mirror novo vem sem a tela de carregamento.
+
+## `preloader/` é gerado, não espelhado
+
+`preloader/scene.js` e `preloader/logo.png`, e os blocos entre `<!--appt-preloader:head-->` e `<!--appt-preloader:body-->` dentro de cada `.html`, **não vêm do Lovable**: são a tela de carregamento, gerada de `src/lib/preloader/` por `scripts/build-v2-preloader.mjs`. Não edite à mão — mexa na fonte e rode:
+
+```bash
+npm run build:v2-preloader
+```
+
+O script é idempotente: ele remove o bloco anterior antes de injetar o novo, então rodar duas vezes não duplica nada.
