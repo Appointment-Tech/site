@@ -23,6 +23,7 @@ export function SceneLayer() {
       | {
           setBeat: (b: string, p?: number, n?: string) => void;
           setFocus: (x: number, y: number) => void;
+          setSafeZone: (halfWidthNdc: number) => void;
           resize: () => void;
           start: () => void;
           stop: () => void;
@@ -103,7 +104,28 @@ export function SceneLayer() {
       sections.forEach((section) => observer.observe(section));
       cleanups.push(() => observer.disconnect());
 
-      const onResize = () => instance.resize();
+      /**
+       * Mede a coluna de conteúdo e declara a faixa que a cena não pode
+       * invadir. O container do site é centralizado e limitado (max-w-6xl),
+       * então em telas largas sobram margens — é ali que a cena vive.
+       *
+       * A medida sai do DOM, não de um número escolhido a dedo: foi assim que
+       * a versão anterior acabou desenhando por cima do texto numa janela mais
+       * larga do que a que eu tinha testado.
+       */
+      const medirZonaSegura = () => {
+        const coluna = document.querySelector<HTMLElement>("[data-beat] > div:last-child");
+        const largura = coluna?.getBoundingClientRect().width ?? 1152;
+        // Uma folga de 32px para o texto não encostar nos blocos.
+        const meia = (largura / 2 + 32) / (window.innerWidth / 2);
+        instance.setSafeZone(meia);
+      };
+      medirZonaSegura();
+
+      const onResize = () => {
+        instance.resize();
+        medirZonaSegura();
+      };
       window.addEventListener("resize", onResize, { passive: true });
       cleanups.push(() => window.removeEventListener("resize", onResize));
 

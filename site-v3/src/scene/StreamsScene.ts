@@ -47,6 +47,8 @@ export class StreamsScene {
     uRows: { value: number };
     /** Para onde as correntes convergem, em NDC (-1..1). */
     uFocus: { value: THREE.Vector2 };
+    /** Meia-largura da coluna de conteúdo, em NDC. A cena não entra aqui. */
+    uSafeZone: { value: number };
     uNeutral: { value: THREE.Color };
     uPrimary: { value: THREE.Color };
     uSuccess: { value: THREE.Color };
@@ -114,6 +116,7 @@ export class StreamsScene {
       uAspect: { value: 1 },
       uRows: { value: SLOT_LABELS.length },
       uFocus: { value: new THREE.Vector2(0, 0) },
+      uSafeZone: { value: 0.55 },
       uNeutral: { value: token("--border", "#e6e3e1") },
       uPrimary: { value: token("--primary", "#e8153f") },
       uSuccess: { value: token("--success", "#1e7c50") },
@@ -170,6 +173,7 @@ export class StreamsScene {
         uniform float uAspect;
         uniform float uRows;
         uniform vec2 uFocus;
+        uniform float uSafeZone;
 
         varying vec2 vUv;
         varying float vRow;
@@ -218,7 +222,8 @@ export class StreamsScene {
           // Conforme a grade se forma, o conjunto migra para o foco — a
           // moldura do celular da seção. Solto (uGrid = 0) ele fica nas
           // bordas, longe da coluna de texto.
-          x += uFocus.x * uGrid;
+          // Só o alinhamento vertical com a moldura: o horizontal agora é
+          // governado pela zona segura.
           y += uFocus.y * uGrid;
           // Encolhe junto: sobre a moldura os blocos são um detalhe, não um
           // segundo elemento disputando a atenção.
@@ -237,8 +242,16 @@ export class StreamsScene {
           vec3 local = position * scale;
           local.x /= uAspect;
 
+          // Empurra o campo inteiro para fora da coluna de texto: x = 0 passa
+          // a cair na borda da zona segura, e as duas correntes se encontram
+          // ladeando o conteúdo em vez de por cima dele. Como a zona vem
+          // medida do container, isto vale em qualquer largura de janela.
+          float ndcX = x / uAspect;
+          float lado = ndcX >= 0.0 ? 1.0 : -1.0;
+          ndcX = lado * (uSafeZone + abs(ndcX) * (1.0 - uSafeZone));
+
           vUv = uv;
-          gl_Position = projectionMatrix * vec4(local + vec3(x / uAspect, y, 0.0), 1.0);
+          gl_Position = projectionMatrix * vec4(local + vec3(ndcX, y, 0.0), 1.0);
         }
       `,
       fragmentShader: /* glsl */ `
@@ -322,6 +335,17 @@ export class StreamsScene {
    */
   setFocus(x: number, y: number): void {
     this.uniforms.uFocus.value.set(x, y);
+  }
+
+  /**
+   * Declara a faixa central ocupada pelo texto, como meia-largura em NDC.
+   *
+   * Sem isto a cena se forma por cima do conteúdo em telas largas: posicionar
+   * por coordenada fixa funciona numa largura e falha em todas as outras. A
+   * zona vem medida do container real, então acompanha qualquer janela.
+   */
+  setSafeZone(halfWidthNdc: number): void {
+    this.uniforms.uSafeZone.value = Math.min(Math.max(halfWidthNdc, 0), 0.95);
   }
 
   resize(): void {
