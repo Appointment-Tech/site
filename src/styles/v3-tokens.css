@@ -1,0 +1,53 @@
+/**
+ * Tokens visuais da v3 — portados de `lib/app/styles/` do app
+ * (Appointment-Tech/app-r2d2). Ver ADR 0004: o app é a fonte da verdade
+ * visual da v3, não o bordô de v1/v2.
+ *
+ * 🚨 Regra herdada do app, que vale igual aqui: o vermelho da marca é acento,
+ * NUNCA fundo de tela. No app é "the selected day, the active tab, one action
+ * per screen". Na v3 isso significa que a cena 3D não pode ser um campo
+ * vermelho — o vermelho aparece na colisão, nas ações e nos pontos das
+ * correntes, sobre o fundo quente.
+ *
+ * Cor de marca nova entra no app primeiro. Se um valor aqui divergir do
+ * app, o app vence.
+ */
+
+:root {
+  /* Superfícies */
+  --v3-background: #fdfbf9;        /* fundo de tela (branco quente) */
+  --v3-surface: #f4f2f0;           /* um nível abaixo do fundo */
+  --v3-card: #ffffff;              /* card puro, separa do fundo quente */
+  --v3-muted: #f4f0ee;             /* preenchimento neutro de apoio */
+
+  /* Texto */
+  --v3-foreground: #1c1515;        /* quase preto, quente: preto puro vibra aqui */
+  --v3-muted-foreground: #776e6c;  /* subtítulo, rótulo de seção, metadado */
+  --v3-border: #e6e3e1;            /* divisória, só onde sombra não basta */
+
+  /* Marca — acento, nunca fundo */
+  --v3-primary: #e8153f;
+  --v3-on-primary: #ffffff;
+  --v3-primary-soft: #ffe9e9;      /* o vermelho presente sem gritar */
+
+  /* Gradiente da marca (AppColorScheme.backgroundStart/End) */
+  --v3-brand-start: #dd002c;
+  --v3-brand-end: #c10027;
+
+  /* Semânticas */
+  --v3-success: #1e7c50;  --v3-success-soft: #e0f7e9;
+  --v3-warning: #b07a20;  --v3-warning-soft: #fff1d5;
+  --v3-info: #4077a3;     --v3-info-soft: #e3f2ff;
+  /* destructive é deliberadamente distinto da marca: "excluir minha conta"
+     não pode parecer o botão primário do produto. */
+  --v3-destructive: #76382e; --v3-destructive-soft: #faede9;
+
+  /* Raio */
+  --v3-radius-sm: 12px;   /* chip, campo, botão de dia */
+  --v3-radius-md: 16px;
+  --v3-radius-lg: 24px;
+  --v3-radius-pill: 999px;
+
+  /* Sombras (AppDesignTokens.shadowCard) */
+  --v3-shadow-card: 0 1px 2px rgba(28, 21, 21, 0.04), 0 8px 24px rgba(28, 21, 21, 0.06);
+}
