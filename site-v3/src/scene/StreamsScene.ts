@@ -45,6 +45,8 @@ export class StreamsScene {
     uOpacity: { value: number };
     uAspect: { value: number };
     uRows: { value: number };
+    /** Para onde as correntes convergem, em NDC (-1..1). */
+    uFocus: { value: THREE.Vector2 };
     uNeutral: { value: THREE.Color };
     uPrimary: { value: THREE.Color };
     uSuccess: { value: THREE.Color };
@@ -111,6 +113,7 @@ export class StreamsScene {
       uOpacity: { value: this.current.opacity },
       uAspect: { value: 1 },
       uRows: { value: SLOT_LABELS.length },
+      uFocus: { value: new THREE.Vector2(0, 0) },
       uNeutral: { value: token("--border", "#e6e3e1") },
       uPrimary: { value: token("--primary", "#e8153f") },
       uSuccess: { value: token("--success", "#1e7c50") },
@@ -166,6 +169,7 @@ export class StreamsScene {
         uniform float uEnergy;
         uniform float uAspect;
         uniform float uRows;
+        uniform vec2 uFocus;
 
         varying vec2 vUv;
         varying float vRow;
@@ -202,6 +206,24 @@ export class StreamsScene {
                   + side * (1.0 - uSeparation) * 0.35 * (1.0 - uGrid);
           float y = mix(looseY, gridY, uGrid);
 
+          // Respiração: um deslocamento pequeno que existe SEMPRE, inclusive
+          // com a grade formada. Sem isto a cena congela assim que assenta —
+          // a oscilação vivia só no estado solto, que a grade descarta, e o
+          // resultado parecia travado justamente no momento mais importante.
+          // A amplitude é menor que o vão entre as linhas, então o alinhamento
+          // continua legível.
+          y += sin(uTime * 0.9 + phase) * 0.010 * (0.35 + uEnergy * 0.65);
+          x += cos(uTime * 0.62 + phase * 1.3) * 0.006 * (0.35 + uEnergy * 0.65);
+
+          // Conforme a grade se forma, o conjunto migra para o foco — a
+          // moldura do celular da seção. Solto (uGrid = 0) ele fica nas
+          // bordas, longe da coluna de texto.
+          x += uFocus.x * uGrid;
+          y += uFocus.y * uGrid;
+          // Encolhe junto: sobre a moldura os blocos são um detalhe, não um
+          // segundo elemento disputando a atenção.
+          float focusScale = mix(1.0, 0.55, uGrid);
+
           // Encaixe: mede o quanto as duas colunas já se fecharam.
           vMeeting = 1.0 - clamp(uSeparation * 2.2, 0.0, 1.0);
           // Confirmar não é tudo de uma vez: os pares fecham em ordem, de cima
@@ -209,7 +231,8 @@ export class StreamsScene {
           vConfirmed = step(lane, uConfirmed) * vMeeting;
 
           // O bloco confirmado cresce de leve: o par virou uma coisa só.
-          float scale = 1.0 + vConfirmed * 0.12;
+          float pulse = 1.0 + vConfirmed * 0.035 * sin(uTime * 1.6 + lane * 6.28);
+          float scale = (1.0 + vConfirmed * 0.12) * focusScale * pulse;
 
           vec3 local = position * scale;
           local.x /= uAspect;
@@ -288,6 +311,17 @@ export class StreamsScene {
     this.target = mixBeats(from, to, Math.min(Math.max(progress, 0), 1));
 
     if (this.running && !this.frame) this.frame = requestAnimationFrame(this.tick);
+  }
+
+  /**
+   * Define para onde as correntes convergem, em coordenadas normalizadas.
+   *
+   * O alvo é a moldura do celular da seção visível: o encontro passa a
+   * acontecer exatamente sobre a tela real do app, em vez de no meio da
+   * página, onde os blocos ficavam por trás do texto e liam como defeito.
+   */
+  setFocus(x: number, y: number): void {
+    this.uniforms.uFocus.value.set(x, y);
   }
 
   resize(): void {
