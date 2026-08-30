@@ -2,15 +2,24 @@ import { useEffect, useRef } from "react";
 
 import { DEFAULT_BEAT } from "@/scene/beats";
 
+
+
 /**
  * Liga a cena three.js à página.
  *
- * A cena é carregada por import dinâmico: three são centenas de kB e o site
- * precisa estar pronto e legível antes disso — quem não tem WebGL, ou pediu
- * menos movimento, nunca baixa o bundle.
+ * A cena tem um palco definido: a área ao redor da moldura do celular da seção
+ * visível. Foi a terceira tentativa de posicioná-la, e as duas anteriores
+ * falharam pelo mesmo motivo — um canvas de tela cheia atrás de um layout de
+ * duas colunas não tem onde acontecer. No meio ele cobre o texto; empurrado
+ * para as bordas, vira duas colunas soltas nos cantos, sem relação com nada.
  *
- * Este componente vive no root, acima do <Outlet>, para a cena não ser
- * remontada a cada navegação (ADR 0002).
+ * Ancorado na moldura, o movimento ganha sentido: os horários dos dois lados
+ * convergem e desaparecem atrás do aparelho, como se entrassem no app. E onde
+ * não há moldura a cena simplesmente não aparece — melhor nada do que ruído.
+ *
+ * A cena é carregada por import dinâmico: three são centenas de kB e o site
+ * precisa estar pronto antes disso. Quem não tem WebGL, ou pediu menos
+ * movimento, nunca baixa o bundle.
  */
 export function SceneLayer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -22,8 +31,6 @@ export function SceneLayer() {
     let scene:
       | {
           setBeat: (b: string, p?: number, n?: string) => void;
-          setFocus: (x: number, y: number) => void;
-          setSafeZone: (halfWidthNdc: number) => void;
           resize: () => void;
           start: () => void;
           stop: () => void;
@@ -36,8 +43,8 @@ export function SceneLayer() {
     void (async () => {
       const { shouldRunScene, StreamsScene } = await import("@/scene/StreamsScene");
 
-      // Verificado depois do import e de novo aqui: entre montar o componente e
-      // o chunk chegar, o visitante pode ter ligado "reduzir movimento".
+      // Verificado de novo aqui: entre montar o componente e o chunk chegar, o
+      // visitante pode ter ligado "reduzir movimento".
       if (cancelled || !shouldRunScene()) return;
 
       const instance = new StreamsScene(canvas);
@@ -47,13 +54,37 @@ export function SceneLayer() {
       }
       scene = instance;
 
-      /**
-       * Qual momento está na tela. IntersectionObserver em vez de ouvir scroll:
-       * o navegador resolve isso fora da thread principal, e um listener de
-       * scroll a 60 Hz é justamente o tipo de coisa que trava celular modesto.
-       */
       const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-beat]"));
       if (sections.length === 0) return;
+
+      /** A moldura visível manda no palco; sem moldura, a cena se esconde. */
+      let palco: HTMLElement | null = null;
+
+      const posicionar = () => {
+        if (!palco) {
+          canvas.style.opacity = "0";
+          return;
+        }
+        const r = palco.getBoundingClientRect();
+        // Fora da viewport não há o que mostrar, e reposicionar custa layout.
+        if (r.bottom < 0 || r.top > window.innerHeight) {
+          canvas.style.opacity = "0";
+          return;
+        }
+        // O palco tem tamanho zero quando a coluna não existe (telas menores).
+        if (r.width < 40) {
+          canvas.style.opacity = "0";
+          return;
+        }
+        const largura = r.width;
+        const altura = r.height;
+        canvas.style.opacity = "1";
+        canvas.style.width = `${largura}px`;
+        canvas.style.height = `${altura}px`;
+        canvas.style.left = `${r.left + r.width / 2 - largura / 2}px`;
+        canvas.style.top = `${r.top + r.height / 2 - altura / 2}px`;
+        instance.resize();
+      };
 
       const observer = new IntersectionObserver(
         (entries) => {
@@ -71,32 +102,16 @@ export function SceneLayer() {
           const index = sections.indexOf(element);
           const next = sections[index + 1]?.dataset["beat"];
 
-          // Progresso dentro da seção: quanto ela já subiu na viewport.
           const rect = element.getBoundingClientRect();
           const travelled = -rect.top / Math.max(rect.height, 1);
-          scene?.setBeat(beat, Math.min(Math.max(travelled, 0), 1), next);
+          instance.setBeat(beat, Math.min(Math.max(travelled, 0), 1), next);
 
-          // As correntes convergem para a moldura do celular desta seção, se
-          // houver uma. Sem isso o encontro acontece no meio da página, por
-          // trás do texto, e lê como ruído em vez de efeito.
-          const alvo =
-            element.querySelector<HTMLElement>("[data-screen-slot]") ??
-            element.querySelector<HTMLElement>("figure");
-          if (alvo) {
-            const caixa = alvo.getBoundingClientRect();
-            // Ponto de encontro à beira da moldura, do lado de dentro da
-            // página: convergir para o centro exato esconde os blocos atrás do
-            // celular, e para o meio da tela os joga por cima do texto. A
-            // borda é o vão que sobra entre os dois.
-            const beira = caixa.left < window.innerWidth / 2
-              ? caixa.right + caixa.width * 0.15
-              : caixa.left - caixa.width * 0.15;
-            const cx = beira / window.innerWidth;
-            const cy = (caixa.top + caixa.height / 2) / window.innerHeight;
-            scene?.setFocus(cx * 2 - 1, -(cy * 2 - 1));
-          } else {
-            scene?.setFocus(0, 0);
-          }
+          // O palco é um vão declarado no layout (`data-scene-stage`), não um
+          // elemento de conteúdo. Ancorar a cena na moldura do celular custou
+          // três tentativas: ou ela sumia atrás do aparelho, ou caía sobre o
+          // texto, e cada ajuste de pixel quebrava a outra ponta.
+          palco = element.querySelector<HTMLElement>("[data-scene-stage]");
+          posicionar();
         },
         { threshold: [0.1, 0.25, 0.5, 0.75, 1] },
       );
@@ -104,30 +119,23 @@ export function SceneLayer() {
       sections.forEach((section) => observer.observe(section));
       cleanups.push(() => observer.disconnect());
 
-      /**
-       * Mede a coluna de conteúdo e declara a faixa que a cena não pode
-       * invadir. O container do site é centralizado e limitado (max-w-6xl),
-       * então em telas largas sobram margens — é ali que a cena vive.
-       *
-       * A medida sai do DOM, não de um número escolhido a dedo: foi assim que
-       * a versão anterior acabou desenhando por cima do texto numa janela mais
-       * larga do que a que eu tinha testado.
-       */
-      const medirZonaSegura = () => {
-        const coluna = document.querySelector<HTMLElement>("[data-beat] > div:last-child");
-        const largura = coluna?.getBoundingClientRect().width ?? 1152;
-        // Uma folga de 32px para o texto não encostar nos blocos.
-        const meia = (largura / 2 + 32) / (window.innerWidth / 2);
-        instance.setSafeZone(meia);
+      // O palco acompanha o scroll. Um rAF por evento, e não trabalho por
+      // evento: rolagem dispara dezenas de vezes por segundo.
+      let agendado = 0;
+      const aoRolar = () => {
+        if (agendado) return;
+        agendado = requestAnimationFrame(() => {
+          agendado = 0;
+          posicionar();
+        });
       };
-      medirZonaSegura();
-
-      const onResize = () => {
-        instance.resize();
-        medirZonaSegura();
-      };
-      window.addEventListener("resize", onResize, { passive: true });
-      cleanups.push(() => window.removeEventListener("resize", onResize));
+      window.addEventListener("scroll", aoRolar, { passive: true });
+      window.addEventListener("resize", aoRolar, { passive: true });
+      cleanups.push(() => {
+        window.removeEventListener("scroll", aoRolar);
+        window.removeEventListener("resize", aoRolar);
+        if (agendado) cancelAnimationFrame(agendado);
+      });
 
       // Aba oculta não desenha: continuar renderizando um canvas que ninguém vê
       // gasta bateria e nada mais.
@@ -153,11 +161,12 @@ export function SceneLayer() {
       ref={canvasRef}
       aria-hidden="true"
       /**
-       * `fixed` e atrás de tudo: a cena é pano de fundo do documento inteiro,
-       * e `pointer-events-none` garante que ela nunca roube um clique de um
-       * link ou de um botão.
+       * Posicionado por JS sobre a moldura da seção visível. Fica atrás do
+       * conteúdo (-z-10), então os blocos somem por trás do aparelho — que é
+       * exatamente a leitura desejada: os horários entram no app.
        */
-      className="pointer-events-none fixed inset-0 -z-10 h-full w-full"
+      className="pointer-events-none fixed -z-10 opacity-0 transition-opacity duration-500"
+      style={{ left: 0, top: 0, width: 0, height: 0 }}
     />
   );
 }

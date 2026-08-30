@@ -138,7 +138,11 @@ function Home() {
 
       {/* 3. colisão — o encontro, tela real do app */}
       <Beat beat="colisao" tone="surface" size="lg">
-        <div className="grid items-center gap-14 lg:grid-cols-[1fr_1fr]">
+        {/* Três colunas em telas grandes: texto, o palco da cena, e a moldura.
+            A cena tem espaço PRÓPRIO — sobrepô-la ao conteúdo, como nas
+            tentativas anteriores, ou some atrás do aparelho ou cai por cima do
+            texto. Abaixo de lg a coluna do palco não existe e a cena some. */}
+        <div className="grid items-center gap-10 lg:grid-cols-[1fr_15rem_auto]">
           <div>
             <BeatLabel>O encontro</BeatLabel>
             <SectionHeading
@@ -164,6 +168,9 @@ function Home() {
               ))}
             </ul>
           </div>
+
+          {/* O palco da cena: um vão declarado no layout, não um palpite. */}
+          <div data-scene-stage aria-hidden="true" className="hidden h-[26rem] lg:block" />
 
           {/* A tela real do app é o desfecho da narrativa, não uma ilustração:
               o que se materializa na colisão é o atendimento já confirmado. */}

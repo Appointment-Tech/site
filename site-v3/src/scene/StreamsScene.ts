@@ -45,10 +45,6 @@ export class StreamsScene {
     uOpacity: { value: number };
     uAspect: { value: number };
     uRows: { value: number };
-    /** Para onde as correntes convergem, em NDC (-1..1). */
-    uFocus: { value: THREE.Vector2 };
-    /** Meia-largura da coluna de conteúdo, em NDC. A cena não entra aqui. */
-    uSafeZone: { value: number };
     uNeutral: { value: THREE.Color };
     uPrimary: { value: THREE.Color };
     uSuccess: { value: THREE.Color };
@@ -115,8 +111,6 @@ export class StreamsScene {
       uOpacity: { value: this.current.opacity },
       uAspect: { value: 1 },
       uRows: { value: SLOT_LABELS.length },
-      uFocus: { value: new THREE.Vector2(0, 0) },
-      uSafeZone: { value: 0.55 },
       uNeutral: { value: token("--border", "#e6e3e1") },
       uPrimary: { value: token("--primary", "#e8153f") },
       uSuccess: { value: token("--success", "#1e7c50") },
@@ -136,11 +130,11 @@ export class StreamsScene {
     // blocos a coluna vira uma torre sobreposta e ilegível — foi o que a
     // primeira versão fez. O número é fixo pela narrativa, não pelo orçamento
     // do aparelho (esse controla o pixelRatio, que é o que de fato pesa).
-    const pairs = 9;
+    const pairs = 7;
     const count = pairs * 2;
 
     // Proporção de um bloco de agenda: largo e baixo, como o card de horário.
-    const geometry = new THREE.PlaneGeometry(0.23, 0.088);
+    const geometry = new THREE.PlaneGeometry(0.46, 0.125);
 
     const seeds = new Float32Array(count * 4);
     for (let i = 0; i < count; i += 1) {
@@ -172,8 +166,6 @@ export class StreamsScene {
         uniform float uEnergy;
         uniform float uAspect;
         uniform float uRows;
-        uniform vec2 uFocus;
-        uniform float uSafeZone;
 
         varying vec2 vUv;
         varying float vRow;
@@ -191,20 +183,25 @@ export class StreamsScene {
           float drift = fract(lane + uTime * (0.02 + uEnergy * 0.03));
           float looseY = (drift * 2.0 - 1.0) * 0.8
                        + sin(uTime * 0.7 + phase) * 0.04 * uEnergy;
-          float looseX = side * (0.72 + sin(phase) * 0.1);
+          // O palco é a área ao redor da moldura: solto, o bloco fica na borda
+          // dele; encaixado, encosta na lateral do aparelho. Entrar mais que
+          // isso o esconde atrás do celular, que é opaco.
+          float looseX = side * (0.95 + sin(phase) * 0.08);
 
           // --- posição em grade: linhas de agenda espaçadas ---
           // O espaçamento vem do numero de faixas, para as linhas nunca se
           // sobreporem: com blocos de 0.088 de altura, 9 linhas em 1.5 sobram.
-          float gridY = (lane - 0.5) * 1.5;
+          float gridY = (lane - 0.5) * 1.55;
 
-          // No encontro os dois lados encostam, formando um par lado a lado —
-          // e nao dois blocos no mesmo lugar.
-          float gridX = side * 0.135;
+          // No encontro os dois lados encostam a moldura, um de cada lado: o
+          // par se forma ladeando o aparelho, e não dentro dele.
+          // O palco é um vão vazio: o encaixe acontece no meio dele, com os
+          // dois blocos do par ENCOSTADOS, não sobrepostos — por isso o
+          // deslocamento é exatamente meia largura de bloco.
+          float gridX = side * 0.24;
 
-          // No leque final a agenda se abre em tres colunas: os tres publicos.
-          float column = floor(lane * 2.999) - 1.0;
-          gridX = mix(gridX, column * 0.5 + side * 0.135, uFan);
+          // No leque final a agenda se abre: os blocos voltam para a borda.
+          gridX = mix(gridX, side * 0.6, uFan);
 
           float x = mix(looseX, gridX, uGrid) * mix(1.0, uSeparation, uGrid * 0.35)
                   + side * (1.0 - uSeparation) * 0.35 * (1.0 - uGrid);
@@ -222,9 +219,6 @@ export class StreamsScene {
           // Conforme a grade se forma, o conjunto migra para o foco — a
           // moldura do celular da seção. Solto (uGrid = 0) ele fica nas
           // bordas, longe da coluna de texto.
-          // Só o alinhamento vertical com a moldura: o horizontal agora é
-          // governado pela zona segura.
-          y += uFocus.y * uGrid;
           // Encolhe junto: sobre a moldura os blocos são um detalhe, não um
           // segundo elemento disputando a atenção.
           float focusScale = mix(1.0, 0.55, uGrid);
@@ -242,16 +236,8 @@ export class StreamsScene {
           vec3 local = position * scale;
           local.x /= uAspect;
 
-          // Empurra o campo inteiro para fora da coluna de texto: x = 0 passa
-          // a cair na borda da zona segura, e as duas correntes se encontram
-          // ladeando o conteúdo em vez de por cima dele. Como a zona vem
-          // medida do container, isto vale em qualquer largura de janela.
-          float ndcX = x / uAspect;
-          float lado = ndcX >= 0.0 ? 1.0 : -1.0;
-          ndcX = lado * (uSafeZone + abs(ndcX) * (1.0 - uSafeZone));
-
           vUv = uv;
-          gl_Position = projectionMatrix * vec4(local + vec3(ndcX, y, 0.0), 1.0);
+          gl_Position = projectionMatrix * vec4(local + vec3(x / uAspect, y, 0.0), 1.0);
         }
       `,
       fragmentShader: /* glsl */ `
@@ -324,28 +310,6 @@ export class StreamsScene {
     this.target = mixBeats(from, to, Math.min(Math.max(progress, 0), 1));
 
     if (this.running && !this.frame) this.frame = requestAnimationFrame(this.tick);
-  }
-
-  /**
-   * Define para onde as correntes convergem, em coordenadas normalizadas.
-   *
-   * O alvo é a moldura do celular da seção visível: o encontro passa a
-   * acontecer exatamente sobre a tela real do app, em vez de no meio da
-   * página, onde os blocos ficavam por trás do texto e liam como defeito.
-   */
-  setFocus(x: number, y: number): void {
-    this.uniforms.uFocus.value.set(x, y);
-  }
-
-  /**
-   * Declara a faixa central ocupada pelo texto, como meia-largura em NDC.
-   *
-   * Sem isto a cena se forma por cima do conteúdo em telas largas: posicionar
-   * por coordenada fixa funciona numa largura e falha em todas as outras. A
-   * zona vem medida do container real, então acompanha qualquer janela.
-   */
-  setSafeZone(halfWidthNdc: number): void {
-    this.uniforms.uSafeZone.value = Math.min(Math.max(halfWidthNdc, 0), 0.95);
   }
 
   resize(): void {
