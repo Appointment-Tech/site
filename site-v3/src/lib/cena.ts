@@ -58,6 +58,7 @@ export function useCenaSincronizada({
   end = "bottom bottom",
   estadoEstatico,
   pesos,
+  linha,
 }: {
   /** Elemento que delimita a cena; recebe a variável CSS de progresso. */
   escopo: RefObject<HTMLElement | null>;
@@ -78,6 +79,14 @@ export function useCenaSincronizada({
    * chegavam a durar menos de um segundo. Omitido, todos pesam igual.
    */
   pesos?: readonly number[];
+  /**
+   * Timeline contínua da cena, montada dentro do escopo do gsap.
+   *
+   * Ela é entregue ao MESMO `ScrollTrigger` como `animation`, e não a um
+   * gatilho próprio: é o que impede a cena de voltar a ter dois relógios de
+   * progresso — o do visual e o do estado — andando fora de fase.
+   */
+  linha?: (gsap: (typeof import("gsap"))["gsap"]) => gsap.core.Timeline;
 }): Cena {
   // Pelo hook, não por leitura direta: ler `matchMedia` durante o render faz
   // o servidor e o cliente discordarem no primeiro passe (React #418).
@@ -108,6 +117,7 @@ export function useCenaSincronizada({
 
     let ativo = true;
     let gatilho: { kill: () => void } | undefined;
+    let limpezaContexto: (() => void) | undefined;
 
     // Limiares acumulados a partir dos pesos. `limites[i]` é onde a fatia do
     // estado i começa; `limites[quantidade]` é sempre 1.
@@ -133,10 +143,20 @@ export function useCenaSincronizada({
 
       const alvo = raiz.querySelector<HTMLElement>(curso) ?? raiz;
 
+      // A timeline nasce dentro do contexto para o `revert()` recolhê-la.
+      let animacao: gsap.core.Timeline | undefined;
+      const contexto = gsap.context(() => {
+        if (linha) animacao = linha(gsap);
+      }, raiz);
+      limpezaContexto = () => contexto.revert();
+
       gatilho = ScrollTrigger.create({
         trigger: alvo,
         start,
         end,
+        // `scrub: true` — sem número. O número introduz suavização, e é
+        // exatamente isso que fazia o visual chegar depois do estado.
+        ...(animacao ? { animation: animacao, scrub: true } : {}),
         // Sem `scrub`: não há timeline a suavizar aqui. O progresso que este
         // callback recebe é o mesmo que vai para a variável CSS e para o
         // estado do React — é essa igualdade que garante a sincronia.
@@ -184,13 +204,14 @@ export function useCenaSincronizada({
     return () => {
       ativo = false;
       gatilho?.kill();
+      limpezaContexto?.();
       removerDiagnostico(nome);
     };
 
     // `pesos` entra pela serialização: um array literal muda de identidade a
     // cada render e reinstalaria o gatilho em todo commit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [curso, quantidade, nome, start, end, finalEstatico, pesos?.join(",")]);
+  }, [curso, quantidade, nome, start, end, finalEstatico, pesos?.join(","), linha]);
 
   // Publica o estado discreto sempre que ele muda, para o painel.
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { ArrowDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -6,183 +6,258 @@ import { Button } from "@/components/ui/button";
 import { InviteDialog } from "@/components/site/InviteDialog";
 import { ScrollClock } from "@/components/home/ScrollClock";
 import { ChaosNotifications } from "@/components/home/ChaosNotifications";
-import { useScrollScene, useReducedMotion } from "@/lib/motion";
+import { useCenaSincronizada } from "@/lib/cena";
+import { useReducedMotion } from "@/lib/motion";
 
 /**
  * Capítulo 1 — o tempo está correndo, e a agenda se abre.
  *
- * O hero segura a cena enquanto o visitante rola: o relógio adianta os
- * ponteiros, as interrupções perdem força e são absorvidas pelo centro, e duas
- * folhas laterais se afastam como as páginas de uma agenda abrindo. É o
- * momento de maior impacto da página, e o que dá sentido a tudo que vem
- * depois.
+ * **Por que o hero não ficava parado.** A seção tinha a altura de uma tela e o
+ * gatilho ia de `top top` a `bottom top` — ou seja, a animação inteira rodava
+ * exatamente durante o período em que a seção SAÍA da tela. Não havia pin nem
+ * sticky: o palco subia junto com o documento. Na metade do progresso o
+ * relógio já estava meio fora da viewport, e no fim tinha sumido — o visitante
+ * nunca via o mostrador funcionando, que é o ponto do capítulo.
  *
- * O conteúdo é HTML real e legível parado: com `prefers-reduced-motion`, ou
- * sem JavaScript, tudo fica no estado final e nada se perde.
+ * Agora a estrutura é a mesma das outras cenas presas: um curso externo alto e
+ * um palco `sticky` da altura da tela (descontando o header). O documento rola,
+ * o palco não sai do lugar, e o progresso muda só o ESTADO da cena.
  */
+const ESTADOS = [
+  { id: "entrada", rotulo: "Entrada" },
+  { id: "abertura", rotulo: "Abertura" },
+  { id: "relogio", rotulo: "Tempo em movimento" },
+  { id: "resolucao", rotulo: "Resolução" },
+  { id: "saida", rotulo: "Saída" },
+] as const;
+
+/**
+ * Rolagem por estado: 10 / 20 / 40 / 15 / 15 por cento do curso.
+ *
+ * O curso encolheu 25% (300vh → 225vh) e a abertura começa antes: nos primeiros
+ * segundos quase nada mudava. O trecho com o mostrador inteiro é o maior de
+ * todos — a abertura é o gesto, o relógio funcionando é o que se observa.
+ */
+const PESOS = [10, 20, 40, 15, 15] as const;
+const CURSO_VH = [23, 45, 90, 34, 33] as const;
+
 export function HeroTimeScene() {
   const secao = useRef<HTMLElement>(null);
   const estatico = useReducedMotion();
 
-  useScrollScene(secao, ({ gsap }) => {
-    const linha = gsap.timeline({
-      scrollTrigger: {
-        trigger: secao.current,
-        start: "top top",
-        end: "bottom top",
-        scrub: 0.6,
-      },
-    });
+  /**
+   * A timeline contínua da cena.
+   *
+   * Vai para o MESMO ScrollTrigger que deriva o estado (ver `lib/cena.ts`), com
+   * `scrub: true`. As posições abaixo são frações do curso e batem com os
+   * limiares dos cinco estados.
+   */
+  const linha = useCallback((gsap: (typeof import("gsap"))["gsap"]) => {
+    const tl = gsap.timeline();
 
-    // Os ponteiros avançam com o scroll: o tempo passa porque você o move.
-    linha
-      .to("[data-clock-ponteiro-hora]", { rotate: 42, ease: "none" }, 0)
-      .to("[data-clock-ponteiro-minuto]", { rotate: 300, ease: "none" }, 0)
-      .to("[data-clock-ponteiro-segundo]", { rotate: 900, ease: "none" }, 0)
-      .to("[data-clock-progresso]", { strokeDashoffset: 0.72, ease: "none" }, 0)
-      // O miolo cresce: o centro abre espaço.
-      .to("[data-clock-miolo]", { attr: { r: 26 }, ease: "power1.in" }, 0)
-      .to("[data-hero-relogio]", { scale: 1.12, opacity: 0.5, ease: "none" }, 0);
+    // Ponteiros: avançam do começo ao fim — o tempo passa porque você o move.
+    tl.to(
+      "[data-clock-ponteiro-hora]",
+      { rotate: 42, svgOrigin: "200 200", ease: "none", duration: 1 },
+      0,
+    )
+      .to(
+        "[data-clock-ponteiro-minuto]",
+        { rotate: 300, svgOrigin: "200 200", ease: "none", duration: 1 },
+        0,
+      )
+      .to(
+        "[data-clock-ponteiro-segundo]",
+        { rotate: 900, svgOrigin: "200 200", ease: "none", duration: 1 },
+        0,
+      )
+      .to("[data-clock-progresso]", { strokeDashoffset: 0.72, ease: "none", duration: 1 }, 0);
 
-    // As interrupções se afastam em profundidades diferentes e somem — são
-    // absorvidas, não apagadas: o produto resolve o que elas representam.
-    gsap.utils.toArray<HTMLElement>("[data-chaos-card]").forEach((card) => {
+    // Abertura das folhas: 10% → 30% do curso. Antes disso elas estão fechadas,
+    // e é por isso que o estado 1 existe.
+    tl.to("[data-folha='esquerda']", { xPercent: -100, ease: "power2.inOut", duration: 0.2 }, 0.1)
+      .to("[data-folha='direita']", { xPercent: 100, ease: "power2.inOut", duration: 0.2 }, 0.1)
+      .to("[data-hero-luz]", { opacity: 1, ease: "power1.out", duration: 0.2 }, 0.13);
+
+    // As interrupções só recuam DEPOIS do trecho de observação: 70% → 85%.
+    // De 30% a 70% o mostrador fica inteiro e só os ponteiros se movem.
+    gsap.utils.toArray<HTMLElement>("[data-chaos-card]").forEach((card, i) => {
       const depth = Number(card.dataset["depth"] ?? 0.5);
-      linha.to(
+      tl.to(
         card,
         {
-          y: -140 * depth,
-          x: (index) => (index % 2 === 0 ? -60 : 60) * depth,
-          scale: 0.82,
+          y: -120 * depth,
+          x: (i % 2 === 0 ? -70 : 70) * depth,
+          scale: 0.84,
           opacity: 0,
-          ease: "none",
+          ease: "power1.out",
+          duration: 0.15,
         },
-        0,
+        0.7,
       );
     });
 
-    // As folhas se abrem — o momento de maior impacto do capítulo. Ocupam
-    // quase metade da tela cada, então o gesto é grande, e a luz que entra
-    // acompanha a abertura.
-    linha
-      .to("[data-folha='esquerda']", { xPercent: -100, ease: "power2.inOut", duration: 0.7 }, 0.08)
-      .to("[data-folha='direita']", { xPercent: 100, ease: "power2.inOut", duration: 0.7 }, 0.08)
-      .to("[data-hero-luz]", { opacity: 1, ease: "power1.out", duration: 0.5 }, 0.25);
+    // O miolo cresce na resolução, preparando o halo do capítulo final.
+    tl.to("[data-clock-miolo]", { attr: { r: 22 }, ease: "power1.in", duration: 0.15 }, 0.7);
 
-    // O texto sobe um pouco mais devagar que o resto: profundidade sem blur.
-    linha.to("[data-hero-texto]", { y: -70, opacity: 0.15, ease: "none" }, 0);
+    // Saída: só nos últimos 15%. O título perde força e o relógio se afasta —
+    // até aqui ele permaneceu inteiro dentro da viewport.
+    tl.to(
+      "[data-hero-texto]",
+      { opacity: 0.2, y: -28, ease: "power1.in", duration: 0.12 },
+      0.88,
+    ).to("[data-hero-relogio]", { scale: 1.14, opacity: 0.45, ease: "none", duration: 0.12 }, 0.88);
 
-    // Batida do relógio quando parado, para a cena não morrer sem scroll.
-    const pulso = gsap.to("[data-clock-aro-medio]", {
-      rotate: 360,
-      duration: 90,
-      ease: "none",
-      repeat: -1,
-      transformOrigin: "200px 200px",
-    });
-    return () => pulso.kill();
+    return tl;
+  }, []);
+
+  const { ativo } = useCenaSincronizada({
+    escopo: secao,
+    curso: "[data-curso-hero]",
+    quantidade: ESTADOS.length,
+    nome: "hero",
+    start: "top top",
+    end: "bottom bottom",
+    pesos: PESOS,
+    linha,
   });
+
+  const fechada = !estatico && ativo === 0;
 
   return (
     <section
       ref={secao}
-      data-beat="distancia"
+      data-cena="hero"
+      data-estado={ESTADOS[ativo]!.id}
       aria-labelledby="hero-titulo"
-      className="relative isolate flex min-h-[92svh] items-center overflow-hidden bg-surface"
     >
-      {/* Camada distante: o relógio. */}
-      <div
-        data-hero-relogio
-        aria-hidden="true"
-        className="pointer-events-none absolute -z-10
-                   left-1/2 top-1/2 h-[104vmin] w-[104vmin] -translate-x-1/2 -translate-y-1/2
-                   lg:left-auto lg:right-[-14vw] lg:h-[96vmin] lg:w-[96vmin] lg:translate-x-0"
-      >
-        <ScrollClock />
-      </div>
-
-      {/* Primeiro plano: o que hoje interrompe o dia. */}
-      <ChaosNotifications className="-z-[5]" />
-
-      {/* As folhas da agenda, que se abrem ao rolar. */}
-      {/* As folhas da agenda. Largas o bastante para a abertura ser um evento,
-          com teto de 24rem: em 1920 duas folhas de 42vw cobriam 84% da tela e
-          o hero abria praticamente vazio, escondendo relógio e interrupções.
-          A borda interna carrega um fio de luz — é o vinco da folha. */}
-      <div
-        aria-hidden="true"
-        data-folha="esquerda"
-        style={estatico ? { transform: "translateX(-100%)" } : undefined}
-        className="pointer-events-none absolute inset-y-0 left-0 -z-[3] w-[26vw] max-w-[24rem] bg-background
-                   shadow-[inset_-24px_0_48px_-24px_rgba(28,21,21,0.10)]
-                   after:absolute after:inset-y-0 after:right-0 after:w-px
-                   after:bg-gradient-to-b after:from-transparent after:via-primary/35 after:to-transparent"
-      />
-      <div
-        aria-hidden="true"
-        data-folha="direita"
-        style={estatico ? { transform: "translateX(100%)" } : undefined}
-        className="pointer-events-none absolute inset-y-0 right-0 -z-[3] w-[26vw] max-w-[24rem] bg-background
-                   shadow-[inset_24px_0_48px_-24px_rgba(28,21,21,0.10)]
-                   before:absolute before:inset-y-0 before:left-0 before:w-px
-                   before:bg-gradient-to-b before:from-transparent before:via-primary/35 before:to-transparent"
-      />
-
-      {/* A luz que entra quando a agenda abre. */}
-      <div
-        aria-hidden="true"
-        data-hero-luz
-        className={cn(
-          "pointer-events-none absolute inset-0 -z-[4]",
-          estatico ? "opacity-100" : "opacity-0",
-        )}
-        style={{
-          background:
-            "radial-gradient(60% 55% at 50% 45%, var(--color-primary-soft) 0%, transparent 70%)",
-        }}
-      />
-
-      <div data-hero-texto className="mx-auto w-full max-w-[76rem] px-5 sm:px-8 2xl:max-w-[90rem]">
-        <div className="max-w-xl rounded-[var(--radius-2xl)] bg-surface/70 p-6 backdrop-blur-[2px] sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
-          <p className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            <span aria-hidden="true" className="inline-block h-px w-8 bg-primary" />O tempo se abre
-            para você
-          </p>
-
-          <h1 id="hero-titulo" className="mt-6 text-5xl leading-[1.02] text-foreground sm:text-7xl">
-            Seu tempo vale mais.
-          </h1>
-
-          <p className="mt-6 measure text-lg leading-relaxed text-muted-foreground">
-            Organize compromissos, conecte pessoas e dedique seu tempo ao que realmente importa.
-          </p>
-
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <InviteDialog
-              trigger={
-                <Button variant="brand" size="pill">
-                  Solicitar acesso
-                </Button>
-              }
-            />
-            <Button variant="quiet" size="pill" asChild>
-              <a href="#como-funciona">Descubra como funciona</a>
-            </Button>
+      <div data-curso-hero className={cn("relative", estatico ? "" : "isolate")}>
+        {/* O palco. `top` e `height` descontam o header sticky: sem isso o
+            topo da cena nasce por baixo da barra e o relógio perde altura
+            útil justamente onde ele precisa caber inteiro. */}
+        <div
+          data-hero-palco
+          className={cn(
+            "relative flex items-center overflow-hidden bg-surface",
+            estatico
+              ? "min-h-[92svh]"
+              : "sticky top-[var(--header-height)] h-[calc(100dvh-var(--header-height))]",
+          )}
+        >
+          {/* Camada distante: o relógio. Centrado no PALCO, que não se move —
+              é o que garante o critério de o centro permanecer na viewport. */}
+          <div
+            data-hero-relogio
+            aria-hidden="true"
+            className="pointer-events-none absolute -z-10
+                       left-1/2 top-1/2 h-[104vmin] w-[104vmin] -translate-x-1/2 -translate-y-1/2
+                       lg:left-auto lg:right-[-14vw] lg:h-[92vmin] lg:w-[92vmin] lg:translate-x-0"
+          >
+            <ScrollClock />
           </div>
 
-          <p className="mt-5 max-w-md text-sm text-muted-foreground">
-            O acesso é liberado por convite, em levas, enquanto o aplicativo não chega às lojas.
-          </p>
-        </div>
-      </div>
+          {/* Primeiro plano: o que hoje interrompe o dia. */}
+          <ChaosNotifications className="-z-[5]" />
 
-      <a
-        href="#como-funciona"
-        className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 rounded-full px-4 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground"
-      >
-        Role para começar
-        <ArrowDown aria-hidden="true" className="size-4 animate-bounce" />
-      </a>
+          {/* As folhas da agenda. Largas o bastante para a abertura ser um
+              evento, com teto de 24rem: em 1920 duas folhas de 42vw cobriam
+              84% da tela e o hero abria praticamente vazio. */}
+          <div
+            aria-hidden="true"
+            data-folha="esquerda"
+            style={estatico ? { transform: "translateX(-100%)" } : undefined}
+            className="pointer-events-none absolute inset-y-0 left-0 -z-[3] w-[26vw] max-w-[24rem] bg-background
+                       shadow-[inset_-24px_0_48px_-24px_rgba(28,21,21,0.10)]
+                       after:absolute after:inset-y-0 after:right-0 after:w-px
+                       after:bg-gradient-to-b after:from-transparent after:via-primary/35 after:to-transparent"
+          />
+          <div
+            aria-hidden="true"
+            data-folha="direita"
+            style={estatico ? { transform: "translateX(100%)" } : undefined}
+            className="pointer-events-none absolute inset-y-0 right-0 -z-[3] w-[26vw] max-w-[24rem] bg-background
+                       shadow-[inset_24px_0_48px_-24px_rgba(28,21,21,0.10)]
+                       before:absolute before:inset-y-0 before:left-0 before:w-px
+                       before:bg-gradient-to-b before:from-transparent before:via-primary/35 before:to-transparent"
+          />
+
+          {/* A luz que entra quando a agenda abre. */}
+          <div
+            aria-hidden="true"
+            data-hero-luz
+            className={cn(
+              "pointer-events-none absolute inset-0 -z-[4]",
+              estatico ? "opacity-100" : "opacity-0",
+            )}
+            style={{
+              background:
+                "radial-gradient(60% 55% at 50% 45%, var(--color-primary-soft) 0%, transparent 70%)",
+            }}
+          />
+
+          <div
+            data-hero-texto
+            className="mx-auto w-full max-w-[76rem] px-5 sm:px-8 2xl:max-w-[90rem]"
+          >
+            <div className="max-w-xl rounded-[var(--radius-2xl)] bg-surface/70 p-6 backdrop-blur-[2px] sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+              <p className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                <span aria-hidden="true" className="inline-block h-px w-8 bg-primary" />O tempo se
+                abre para você
+              </p>
+
+              <h1
+                id="hero-titulo"
+                className="mt-6 text-5xl leading-[1.02] text-foreground sm:text-7xl"
+              >
+                Seu tempo vale mais.
+              </h1>
+
+              <p className="mt-6 measure text-lg leading-relaxed text-muted-foreground">
+                Organize compromissos, conecte pessoas e dedique seu tempo ao que realmente importa.
+              </p>
+
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                <InviteDialog
+                  trigger={
+                    <Button variant="brand" size="pill">
+                      Solicitar acesso
+                    </Button>
+                  }
+                />
+                <Button variant="quiet" size="pill" asChild>
+                  <a href="#como-funciona">Descubra como funciona</a>
+                </Button>
+              </div>
+
+              <p className="mt-5 max-w-md text-sm text-muted-foreground">
+                O acesso é liberado por convite, em levas, enquanto o aplicativo não chega às lojas.
+              </p>
+            </div>
+          </div>
+
+          {/* O convite a rolar some assim que a cena começa a responder. */}
+          <a
+            href="#como-funciona"
+            className={cn(
+              "absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 rounded-full px-4 py-2",
+              "text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground",
+              "transition-opacity duration-500 hover:text-foreground",
+              estatico || fechada ? "opacity-100" : "pointer-events-none opacity-0",
+            )}
+          >
+            Role para começar
+            <ArrowDown aria-hidden="true" className="size-4 animate-bounce" />
+          </a>
+        </div>
+
+        {/* O curso da cena. Sem movimento não existe: é altura que só serve
+            para dirigir a animação. */}
+        {estatico
+          ? null
+          : ESTADOS.map((e, i) => (
+              <div key={e.id} aria-hidden="true" style={{ height: `${CURSO_VH[i]}vh` }} />
+            ))}
+      </div>
     </section>
   );
 }

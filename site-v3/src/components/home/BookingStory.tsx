@@ -72,24 +72,28 @@ const ESTADOS = [
 const PASSOS = ["Encontre", "Escolha", "Agende", "Confirme"] as const;
 
 /** "Confirme" tem a tela mais densa da cena, e a resolução precisa assentar. */
-const PESOS = [1, 1.25, 1.2, 1.5, 1.35] as const;
+/**
+ * Rolagem de cada estado, em vh. É também o peso da fatia: espaçador e fatia
+ * são o mesmo número, então o que se lê no CSS é o que governa a troca.
+ */
+const CURSO_VH = [80, 80, 85, 90, 60] as const;
 
 /** Escolha de horário, composta com as peças reais do app. */
 function TelaDisponibilidade() {
   return (
-    <div className="flex h-full flex-col bg-card px-4 pb-4 pt-6 text-left">
-      <p className="text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <div className="flex h-full flex-col bg-card px-3 pb-3 pt-4 text-left">
+      <p className="text-[0.55rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         Consulta de avaliação
       </p>
-      <p className="mt-1 flex items-center gap-1.5 text-[0.78rem] font-semibold text-foreground">
-        <CalendarDays aria-hidden="true" className="size-3.5 text-marca" />
+      <p className="mt-1 flex items-center gap-1 text-[0.7rem] font-semibold text-foreground">
+        <CalendarDays aria-hidden="true" className="size-3 shrink-0 text-marca" />
         Domingo, 30 de agosto
       </p>
 
-      <p className="mt-5 text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="mt-4 text-[0.55rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         Horários livres
       </p>
-      <div className="mt-2 grid grid-cols-3 gap-1.5">
+      <div className="mt-2 grid grid-cols-3 gap-1">
         <ChipHorario hora="09:00" estado="selecionado" />
         <ChipHorario hora="10:30" />
         <ChipHorario hora="14:00" />
@@ -98,11 +102,11 @@ function TelaDisponibilidade() {
         <ChipHorario hora="17:00" />
       </div>
 
-      <div className="mt-auto rounded-[var(--radius-md)] border border-marca/30 bg-marca-soft p-3">
-        <p className="text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-marca">
+      <div className="mt-auto rounded-[var(--radius-md)] border border-marca/30 bg-marca-soft p-2">
+        <p className="text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-marca">
           Selecionado
         </p>
-        <p className="mt-1 text-[0.82rem] font-semibold tabular-nums text-foreground">
+        <p className="mt-0.5 text-[0.75rem] font-semibold tabular-nums text-foreground">
           09:00 · 50 min
         </p>
       </div>
@@ -113,35 +117,35 @@ function TelaDisponibilidade() {
 /** Conferência antes de confirmar — ainda NÃO é um Appointment confirmado. */
 function TelaConferencia() {
   return (
-    <div className="flex h-full flex-col bg-card px-4 pb-4 pt-6 text-left">
-      <p className="text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+    <div className="flex h-full flex-col bg-card px-3 pb-3 pt-4 text-left">
+      <p className="text-[0.55rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         Confira antes de confirmar
       </p>
-      <div className="mt-3 space-y-2 rounded-[var(--radius-md)] border border-border p-3">
+      <div className="mt-2 space-y-1 rounded-[var(--radius-md)] border border-border p-2">
         <Linha rotulo="Serviço" valor="Consulta de avaliação" />
         <Linha rotulo="Profissional" valor="Helena Vasconcelos" />
         <Linha rotulo="Quando" valor="30/08, 09:00" />
         <Linha rotulo="Duração" valor="50 min" />
       </div>
 
-      <div className="mt-3 rounded-[var(--radius-md)] border border-border p-3">
-        <p className="flex items-center justify-between text-[0.72rem] text-muted-foreground">
+      <div className="mt-2 rounded-[var(--radius-md)] border border-border p-2">
+        <p className="flex items-center justify-between text-[0.62rem] text-muted-foreground">
           Valor
-          <span className="text-[0.95rem] font-semibold tabular-nums text-foreground">
+          <span className="text-[0.85rem] font-semibold tabular-nums text-foreground">
             R$ 180,00
           </span>
         </p>
-        <p className="mt-2 flex items-center gap-1.5 border-t border-border pt-2 text-[0.7rem] text-muted-foreground">
-          <CreditCard aria-hidden="true" className="size-3.5 text-marca" />
+        <p className="mt-1.5 flex items-start gap-1 border-t border-border pt-1.5 text-[0.6rem] leading-tight text-muted-foreground">
+          <CreditCard aria-hidden="true" className="mt-px size-3 shrink-0 text-marca" />
           Pagamento disponível neste serviço: cartão ou PIX
         </p>
       </div>
 
-      <p className="mt-3 rounded-[var(--radius-md)] bg-neutral-soft p-3 text-[0.68rem] leading-snug text-muted-foreground">
+      <p className="mt-2 rounded-[var(--radius-md)] bg-neutral-soft p-2 text-[0.58rem] leading-tight text-muted-foreground">
         Cancelamento e reagendamento sem multa, conforme a regra da profissional.
       </p>
 
-      <div className="mt-auto rounded-[var(--radius-pill)] bg-marca py-2.5 text-center text-[0.8rem] font-semibold text-white">
+      <div className="mt-auto rounded-[var(--radius-pill)] bg-marca py-2 text-center text-[0.72rem] font-semibold text-white">
         Confirmar Appointment
       </div>
     </div>
@@ -150,8 +154,8 @@ function TelaConferencia() {
 
 function Linha({ rotulo, valor }: { rotulo: string; valor: string }) {
   return (
-    <p className="flex items-baseline justify-between gap-3 text-[0.72rem]">
-      <span className="text-muted-foreground">{rotulo}</span>
+    <p className="flex items-baseline justify-between gap-2 text-[0.62rem] leading-tight">
+      <span className="shrink-0 text-muted-foreground">{rotulo}</span>
       <span className="text-right font-medium text-foreground">{valor}</span>
     </p>
   );
@@ -276,18 +280,90 @@ export function BookingStory() {
     curso: "[data-curso-etapas]",
     quantidade: ESTADOS.length,
     nome: "passos",
-    start: "top 85%",
+    start: "top top",
     end: "bottom bottom",
-    pesos: PESOS,
+    pesos: CURSO_VH,
   });
 
   const estado = ESTADOS[ativo]!;
 
+  /** A trilha dos quatro passos. Não se move: é a referência da cena. */
+  const trilha = (
+    <ol className="flex flex-wrap items-center gap-x-2 gap-y-2" aria-hidden="true">
+      {PASSOS.map((verbo, indice) => {
+        const cumprido = indice < estado.passo || Boolean(estado.resolucao);
+        const corrente = indice === estado.passo && !estado.resolucao;
+        return (
+          <li key={verbo} className="flex items-center gap-2">
+            <span
+              data-indicador={verbo}
+              data-indicador-ativo={indice === estado.passo || undefined}
+              className={cn(
+                "inline-flex h-7 items-center gap-2 rounded-[var(--radius-pill)] px-3 text-[0.75rem] font-semibold transition-colors duration-300",
+                cumprido && "bg-marca-soft text-marca",
+                corrente && "bg-marca text-white",
+                !cumprido && !corrente && "bg-neutral-soft text-muted-foreground",
+              )}
+            >
+              {cumprido ? <Check className="size-3.5" /> : <span>{indice + 1}</span>}
+              <span>{verbo}</span>
+            </span>
+            {indice < PASSOS.length - 1 ? (
+              <span
+                className={cn(
+                  "h-px w-5 transition-colors duration-300 sm:w-9",
+                  indice < estado.passo || estado.resolucao ? "bg-marca/50" : "bg-border",
+                )}
+              />
+            ) : null}
+          </li>
+        );
+      })}
+    </ol>
+  );
+
+  // Com movimento reduzido a cena vira uma lista convencional: sem palco preso
+  // e sem curso, que é altura existente só para dirigir a animação.
+  if (estatico) {
+    return (
+      <Capitulo id="como-funciona" tom="quente" className="scroll-mt-20">
+        <section ref={secao} aria-labelledby="passos-titulo">
+          <RotuloCapitulo>Quatro passos, nenhuma ligação</RotuloCapitulo>
+          <h2 id="passos-titulo" className="mt-5 max-w-3xl text-3xl sm:text-4xl">
+            Marcar um Appointment é tão fácil quanto mandar uma mensagem.
+          </h2>
+          <div className="mt-10">{trilha}</div>
+          <div className="mt-12 space-y-14">
+            {ESTADOS.map((item, indice) => (
+              <article
+                key={item.id}
+                className="grid gap-8 lg:grid-cols-[1fr_16rem] lg:items-center"
+              >
+                <div>
+                  <h3 className="text-xl sm:text-2xl">
+                    <span className="text-marca">{item.resolucao ? "✓" : item.passo + 1}.</span>{" "}
+                    {item.titulo}
+                  </h3>
+                  <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground">
+                    {item.texto}
+                  </p>
+                  <div className="mt-5 max-w-sm">
+                    <PecaDoEstado indice={indice} />
+                  </div>
+                </div>
+                <PhoneFrame screen={`fluxo-${item.id}`} caption={item.legenda}>
+                  <PalcoTelas ativo={indice} />
+                </PhoneFrame>
+              </article>
+            ))}
+          </div>
+        </section>
+      </Capitulo>
+    );
+  }
+
   return (
-    <Capitulo id="como-funciona" tom="quente" className="scroll-mt-20">
-      {/* Os `data-*` abaixo não são enfeite: são o contrato de sincronia
-          desta cena, e é por eles que a conferência automatizada prova que
-          estado, texto, visual e indicador apontam para a mesma coisa. */}
+    <Capitulo id="como-funciona" tom="quente" compacto className="scroll-mt-20">
       <section
         ref={secao}
         aria-labelledby="passos-titulo"
@@ -295,105 +371,92 @@ export function BookingStory() {
         data-estado={estado.id}
         data-passo-ativo={estado.passo}
       >
-        <RotuloCapitulo>Quatro passos, nenhuma ligação</RotuloCapitulo>
-        <h2 id="passos-titulo" className="mt-5 max-w-3xl text-3xl sm:text-4xl">
-          Marcar um Appointment é tão fácil quanto mandar uma mensagem.
-        </h2>
-
-        {/* Trilho de progresso. O vermelho marca onde o visitante está; o
-            cinza, o que ainda vem. O verde fica para o selo do fim. */}
-        <ol className="mt-10 flex flex-wrap items-center gap-x-2 gap-y-3" aria-hidden="true">
-          {PASSOS.map((verbo, indice) => {
-            const cumprido = indice < estado.passo || Boolean(estado.resolucao);
-            const corrente = indice === estado.passo && !estado.resolucao;
-            return (
-              <li key={verbo} className="flex items-center gap-2">
-                <span
-                  data-indicador={verbo}
-                  data-indicador-ativo={indice === estado.passo || undefined}
-                  className={cn(
-                    "inline-flex h-7 items-center gap-2 rounded-[var(--radius-pill)] px-3 text-[0.75rem] font-semibold transition-colors duration-300",
-                    cumprido && "bg-marca-soft text-marca",
-                    corrente && "bg-marca text-white",
-                    !cumprido && !corrente && "bg-neutral-soft text-muted-foreground",
-                  )}
-                >
-                  {cumprido ? <Check className="size-3.5" /> : <span>{indice + 1}</span>}
-                  <span>{verbo}</span>
-                </span>
-                {indice < PASSOS.length - 1 ? (
-                  <span
-                    className={cn(
-                      "h-px w-6 transition-colors duration-300 sm:w-10",
-                      indice < estado.passo || estado.resolucao ? "bg-marca/50" : "bg-border",
-                    )}
-                  />
-                ) : null}
-              </li>
-            );
-          })}
-        </ol>
-
-        <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-16">
-          <ol data-curso-etapas className={cn("space-y-14", estatico ? "" : "lg:space-y-[30vh]")}>
-            {ESTADOS.map((item, indice) => (
-              <li
-                key={item.id}
-                data-copy={item.id}
-                data-copy-ativo={indice === ativo || undefined}
-                className={cn(
-                  // O apagamento é só de `lg` para cima. Abaixo disso o celular
-                  // não é sticky, o curso da cena é curto e cada etapa durava
-                  // cerca de 120px de rolagem — apagar texto ali é esconder
-                  // conteúdo que ninguém tem tempo de ler.
-                  "transition-opacity duration-300",
-                  estatico || indice === ativo ? "opacity-100" : "opacity-100 lg:opacity-35",
-                )}
+        <div data-curso-etapas className="relative">
+          {/*
+           * O palco.
+           *
+           * **Por que o capítulo funcionava como lista vertical.** Os cinco
+           * textos eram `<li>` empilhados no documento, separados por 30vh, e
+           * só o celular era `sticky`. O visitante rolava até encontrar a
+           * próxima mensagem, e a certa altura via a tela do app sem título e
+           * sem trilha na tela — as duas referências da cena já tinham subido.
+           *
+           * Agora eyebrow, título, trilha, mensagem e celular vivem no mesmo
+           * bloco preso. O documento rola; nada aqui atravessa a página. Só a
+           * MENSAGEM troca, sempre na mesma posição física.
+           */}
+          <div
+            data-passos-palco
+            className="sticky top-[var(--header-height)] flex h-[calc(100dvh-var(--header-height))] flex-col justify-center py-4"
+          >
+            <div data-passos-cabecalho>
+              <RotuloCapitulo>Quatro passos, nenhuma ligação</RotuloCapitulo>
+              <h2
+                id="passos-titulo"
+                className="mt-3 max-w-3xl text-2xl leading-tight sm:text-3xl lg:text-4xl"
               >
-                <h3 className="text-xl sm:text-2xl">
-                  <span className="text-marca">{item.resolucao ? "✓" : item.passo + 1}.</span>{" "}
-                  {item.titulo}
+                Marcar um Appointment é tão fácil quanto mandar uma mensagem.
+              </h2>
+              <div className="mt-5">{trilha}</div>
+            </div>
+
+            {/* Área da etapa ativa. Todas as etapas ocupam este mesmo lugar. */}
+            <div className="mt-6 grid items-start gap-6 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8">
+              <div
+                key={estado.id}
+                data-copy={estado.id}
+                data-copy-ativo
+                // Altura reservada: os parágrafos das etapas têm números de
+                // linha diferentes, e sem piso a coluna encolhia entre estados
+                // e empurrava o aparelho alguns pixels para cima.
+                className="min-h-[8rem] animate-in fade-in slide-in-from-bottom-1 duration-300 sm:min-h-[9rem] lg:min-h-[15rem]"
+              >
+                <h3 className="text-xl leading-snug sm:text-2xl">
+                  <span className="text-marca">{estado.resolucao ? "✓" : estado.passo + 1}.</span>{" "}
+                  {estado.titulo}
                 </h3>
                 <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground">
-                  {item.texto}
+                  {estado.texto}
                 </p>
-                <div className="mt-6 max-w-sm">
-                  <PecaDoEstado indice={indice} />
+                <div className="mt-5 hidden max-w-sm lg:block">
+                  <PecaDoEstado indice={ativo} />
                 </div>
-              </li>
-            ))}
-          </ol>
+              </div>
 
-          <div
-            className={cn(
-              "relative hidden lg:block",
-              estatico ? "" : "lg:sticky lg:top-[max(6rem,calc(50vh-19rem))]",
-            )}
-          >
-            {/* Halo da marca concentrado atrás do aparelho. */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -inset-x-10 -inset-y-8"
-              style={{
-                background:
-                  "radial-gradient(58% 46% at 50% 46%, color-mix(in srgb, var(--appointment-red) 13%, transparent) 0%, transparent 72%)",
-              }}
-            />
-            <PhoneFrame
-              screen="fluxo"
-              caption={estado.legenda}
-              className="relative lg:max-w-[22rem]"
-            >
-              <PalcoTelas ativo={ativo} />
-            </PhoneFrame>
+              {/* O celular não muda de posição nem de tamanho entre estados.
+                  A largura é conservadora de propósito: a 22rem o aparelho
+                  tem 780px de altura e não cabe no palco junto do título e da
+                  trilha, que são as referências que precisam ficar na tela. */}
+              <div className="relative mx-auto lg:mx-0">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -inset-x-10 -inset-y-6"
+                  style={{
+                    background:
+                      "radial-gradient(58% 46% at 50% 46%, color-mix(in srgb, var(--appointment-red) 13%, transparent) 0%, transparent 72%)",
+                  }}
+                />
+                <PhoneFrame
+                  screen="fluxo"
+                  className="relative w-[min(11.5rem,calc((100svh-var(--header-height)-26.5rem)*0.45))] sm:w-[min(13rem,calc((100svh-var(--header-height)-25.5rem)*0.45))] lg:w-[min(15.25rem,calc((100dvh-var(--header-height)-19rem)*0.45))] 2xl:w-[min(17.5rem,calc((100dvh-var(--header-height)-20rem)*0.45))]"
+                >
+                  <PalcoTelas ativo={ativo} />
+                </PhoneFrame>
+                {/* A legenda fica FORA da moldura, com altura reservada para
+                    duas linhas. Dentro dela, uma legenda que quebrava em duas
+                    linhas em alguns estados mudava a altura da figura e o
+                    aparelho deslizava até 21px entre uma etapa e outra. */}
+                <p className="relative mt-3 flex min-h-[2.75rem] items-start justify-center text-center text-sm leading-snug text-muted-foreground">
+                  {estado.legenda}
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Abaixo de lg o aparelho aparece uma vez, no fim do fluxo. */}
-        <div className="mt-12 lg:hidden">
-          <PhoneFrame screen="fluxo-compacto" caption={ESTADOS[4]!.legenda}>
-            <PalcoTelas ativo={4} />
-          </PhoneFrame>
+          {/* O curso: cada estado recebe a rolagem declarada em CURSO_VH. */}
+          {ESTADOS.map((item, indice) => (
+            <div key={item.id} aria-hidden="true" style={{ height: `${CURSO_VH[indice]}vh` }} />
+          ))}
         </div>
       </section>
     </Capitulo>

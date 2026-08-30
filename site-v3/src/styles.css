@@ -112,6 +112,13 @@
    * --gradient-brand, que já era a versão escura da marca. `muted` é a lavagem
    * mais clara possível, para fundo de capítulo sem virar bloco colorido.
    */
+  /*
+   * Altura do header sticky. As cenas presas descontam este valor para o palco
+   * não nascer por baixo da barra: `top: var(--header-height)` e
+   * `height: calc(100dvh - var(--header-height))`. Medido em 65px em 1440 e 390.
+   */
+  --header-height: 65px;
+
   --appointment-red: #e8153f;
   --appointment-red-hover: #c10027;
   --appointment-red-soft: #ffe9e9;

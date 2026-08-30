@@ -43,6 +43,11 @@ export const ScrollClock = forwardRef<SVGSVGElement, { className?: string }>(fun
           <stop offset="70%" stopColor="var(--color-surface)" stopOpacity="0.55" />
           <stop offset="100%" stopColor="var(--color-surface)" stopOpacity="0" />
         </radialGradient>
+        {/* Recorte do mostrador. Os ponteiros vivem dentro dele, então
+            nenhum deles pode aparecer solto fora do aro externo. */}
+        <clipPath id="clock-mostrador">
+          <circle cx="200" cy="200" r="176" />
+        </clipPath>
         <linearGradient id="clock-marca" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="var(--color-primary)" />
           <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0.55" />
@@ -107,42 +112,54 @@ export const ScrollClock = forwardRef<SVGSVGElement, { className?: string }>(fun
         ))}
       </g>
 
-      {/* Ponteiros: a origem fica no centro para o GSAP girar por rotate. */}
-      <g data-clock-ponteiro-hora style={{ transformOrigin: "200px 200px" }}>
-        <line
-          x1="200"
-          y1="200"
-          x2="200"
-          y2="112"
-          stroke="var(--appointment-red-dark)"
-          strokeWidth="4.5"
-          strokeLinecap="round"
-          opacity="0.85"
-        />
-      </g>
-      <g data-clock-ponteiro-minuto style={{ transformOrigin: "200px 200px" }}>
-        <line
-          x1="200"
-          y1="200"
-          x2="200"
-          y2="70"
-          stroke="var(--color-foreground)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          opacity="0.45"
-        />
-      </g>
-      <g data-clock-ponteiro-segundo style={{ transformOrigin: "200px 200px" }}>
-        <line
-          x1="200"
-          y1="216"
-          x2="200"
-          y2="56"
-          stroke="var(--appointment-red)"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          opacity="0.9"
-        />
+      {/*
+       * Ponteiros.
+       *
+       * 🚨 O eixo de rotação NÃO pode vir só do `transform-origin` do CSS: ao
+       * animar SVG o GSAP escreve `transform-origin: 0px 0px` e assume o eixo
+       * pelo centro da bounding box do próprio `<g>`. Para o ponteiro dos
+       * segundos, cuja caixa vai de y=56 a y=216, esse centro cai 64 unidades
+       * ACIMA do eixo real — e a ponta passava a descrever um arco que saía
+       * 645px para fora do aro, lendo como um traço solto na tela. O eixo
+       * correto é passado no tween, com `svgOrigin: "200 200"`.
+       */}
+      <g clipPath="url(#clock-mostrador)">
+        <g data-clock-ponteiro-hora style={{ transformOrigin: "200px 200px" }}>
+          <line
+            x1="200"
+            y1="200"
+            x2="200"
+            y2="112"
+            stroke="var(--appointment-red-dark)"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+            opacity="0.85"
+          />
+        </g>
+        <g data-clock-ponteiro-minuto style={{ transformOrigin: "200px 200px" }}>
+          <line
+            x1="200"
+            y1="200"
+            x2="200"
+            y2="70"
+            stroke="var(--color-foreground)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            opacity="0.45"
+          />
+        </g>
+        <g data-clock-ponteiro-segundo style={{ transformOrigin: "200px 200px" }}>
+          <line
+            x1="200"
+            y1="216"
+            x2="200"
+            y2="56"
+            stroke="var(--appointment-red)"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            opacity="0.9"
+          />
+        </g>
       </g>
 
       {/* Miolo: cresce e vira o halo do capítulo final. */}
