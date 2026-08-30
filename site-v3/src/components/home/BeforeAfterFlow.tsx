@@ -1,101 +1,152 @@
 import { useRef } from "react";
+import { ArrowRight } from "lucide-react";
 
-import { useScrollScene } from "@/lib/motion";
+import { Capitulo, RotuloCapitulo } from "@/components/home/Capitulo";
+import { ChipHorario, ChipServico, PecaRecurso, SeloStatus } from "@/components/home/pecas";
+import { useScrollScene, useReducedMotion } from "@/lib/motion";
 
 /**
  * Capítulo 5 — do problema à confirmação.
  *
- * Sem tabela comparativa: os fragmentos do "antes" se reorganizam no fluxo do
- * app conforme o scroll avança. Cada item da esquerda tem um par à direita, e
- * a animação leva um ao outro — a simplificação é vista, não lida.
+ * Cada interrupção do hero reaparece aqui e se converte no componente do app
+ * que a resolve. São as MESMAS mensagens do capítulo 1, propositalmente: o
+ * visitante reconhece o ruído que viu no começo e o vê virar interface.
+ *
+ * A transformação é o elemento principal; a comparação textual é apoio.
  */
 const CONVERSOES = [
-  { antes: "Mensagem às 23h", depois: "Horário livre, visível na hora" },
-  { antes: "Ligação não atendida", depois: "Confirmação automática" },
-  { antes: "Horários desencontrados", depois: "Agenda sincronizada" },
-  { antes: "Cobrança manual, depois", depois: "Pagamento no ato" },
-  { antes: "Anotação em três lugares", depois: "Informações centralizadas" },
-  { antes: "Falta sem aviso", depois: "Lembrete antes da hora" },
+  {
+    ruido: "“Tem horário amanhã?”",
+    hora: "23:41",
+    virou: "Busca de disponibilidade",
+    peca: (
+      <div className="flex flex-wrap gap-2">
+        <ChipHorario hora="09:00" />
+        <ChipHorario hora="10:30" />
+        <ChipHorario hora="14:00" />
+      </div>
+    ),
+  },
+  {
+    ruido: "Chamada perdida",
+    hora: "09:02",
+    virou: "Confirmação automática",
+    peca: <SeloStatus status="confirmado" />,
+  },
+  {
+    ruido: "Horário já ocupado",
+    hora: "16:30",
+    virou: "Sugestão de outro horário",
+    peca: (
+      <div className="flex flex-wrap gap-2">
+        {/* Ocupado, não confirmado: o 16:30 não é um sucesso, é uma vaga que
+            não existe. Pintá-lo de verde invertia o sentido da cena. */}
+        <ChipHorario hora="16:30" estado="ocupado" />
+        <ChipHorario hora="17:00" estado="selecionado" />
+      </div>
+    ),
+  },
+  {
+    ruido: "“Preciso remarcar”",
+    hora: "07:15",
+    virou: "Remarcação dentro do app",
+    peca: <PecaRecurso tipo="remarcacao">Horário liberado volta a circular</PecaRecurso>,
+  },
+  {
+    ruido: "Não compareceu",
+    hora: "14:00",
+    virou: "Lembrete e regra de cancelamento",
+    peca: <PecaRecurso tipo="lembrete">Aviso antes da hora</PecaRecurso>,
+  },
+  {
+    ruido: "“Quanto custa?”",
+    hora: "22:08",
+    virou: "Serviço com preço e pagamento",
+    peca: <ChipServico nome="Consulta de avaliação" valor="R$ 180,00" ativo />,
+  },
 ] as const;
 
 export function BeforeAfterFlow() {
   const secao = useRef<HTMLElement>(null);
+  const estatico = useReducedMotion();
 
   useScrollScene(secao, ({ gsap }) => {
-    gsap.utils.toArray<HTMLElement>("[data-conversao]").forEach((linha, indice) => {
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: linha,
-          start: "top 78%",
-          end: "top 42%",
-          scrub: 0.5,
-        },
-      });
-
-      // O fragmento antigo perde força e desliza para a direita; o novo entra
-      // no lugar dele. É a mesma informação, reorganizada.
-      tl.to(linha.querySelector("[data-antes]"), { xPercent: 12, opacity: 0.28, ease: "none" }, 0)
+    gsap.utils.toArray<HTMLElement>("[data-conversao]").forEach((linha) => {
+      gsap
+        .timeline({
+          scrollTrigger: { trigger: linha, start: "top 82%", end: "top 45%", scrub: 0.5 },
+        })
+        // O ruído recua e perde força; o componente do app entra no lugar.
+        .to(linha.querySelector("[data-ruido]"), { xPercent: 10, opacity: 0.94, ease: "none" }, 0)
         .fromTo(
-          linha.querySelector("[data-depois]"),
-          { xPercent: -8, opacity: 0 },
+          linha.querySelector("[data-virou]"),
+          { xPercent: -6, opacity: 0 },
           { xPercent: 0, opacity: 1, ease: "none" },
           0,
         )
         .fromTo(
-          linha.querySelector("[data-tracado]"),
-          { scaleX: 0 },
-          { scaleX: 1, ease: "none" },
+          linha.querySelector("[data-seta]"),
+          { scaleX: 0.2, opacity: 0.2 },
+          { scaleX: 1, opacity: 1, ease: "none" },
           0,
         );
-
-      if (indice === 0) tl.progress(0);
     });
   });
 
   return (
-    <section
-      ref={secao}
-      data-beat="dispersao"
-      aria-labelledby="conversao-titulo"
-      className="relative bg-surface py-24 sm:py-32"
-    >
-      <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
-        <p className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-          <span aria-hidden="true" className="inline-block h-px w-8 bg-primary" />
-          Do problema à confirmação
-        </p>
-        <h2 id="conversao-titulo" className="mt-5 max-w-2xl text-3xl sm:text-4xl">
-          O que hoje é ruído vira um passo só.
+    /*
+     * O único capítulo de fundo cheio da página.
+     *
+     * A home era branca de ponta a ponta depois do hero, e o vermelho da marca
+     * só aparecia em botão. Aqui ele vira o ambiente: fundo escuro derivado do
+     * --gradient-brand, texto branco, e as peças do app entrando como
+     * superfícies claras — a interface literalmente acendendo sobre o ruído.
+     * Um pico só; repetido, deixaria de ser pico.
+     */
+    <Capitulo tom="brasa">
+      <section ref={secao} aria-labelledby="conversao-titulo">
+        <RotuloCapitulo invertido>Do problema à confirmação</RotuloCapitulo>
+        <h2 id="conversao-titulo" className="mt-5 max-w-3xl text-3xl text-white sm:text-4xl">
+          O ruído do começo vira interface.
         </h2>
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-white/85">
+          As mesmas interrupções que abriram esta página, agora resolvidas dentro do app.
+        </p>
 
-        <ul className="mt-16 space-y-6">
+        <ul className="mt-14 space-y-4">
           {CONVERSOES.map((item) => (
             <li
-              key={item.antes}
+              key={item.ruido}
               data-conversao
-              className="grid items-center gap-4 sm:grid-cols-[1fr_auto_1fr]"
+              className="grid items-center gap-4 rounded-[var(--radius-xl)] border border-white/20 bg-white/10 p-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)] sm:gap-6 sm:p-5"
             >
-              <p
-                data-antes
-                className="rounded-[var(--radius-lg)] border border-border bg-card/60 px-4 py-3 text-[0.9rem] text-muted-foreground line-through decoration-primary/40"
+              {/* O ruído: o mesmo cartão do hero. */}
+              <div
+                data-ruido
+                className="rounded-[var(--radius-lg)] border border-white/30 bg-white/14 px-4 py-3"
+                style={estatico ? { opacity: 0.94 } : undefined}
               >
-                {item.antes}
-              </p>
+                <p className="text-[0.88rem] font-medium text-white">{item.ruido}</p>
+                <p className="mt-0.5 text-[0.76rem] tabular-nums text-white">{item.hora}</p>
+              </div>
 
-              <span aria-hidden="true" className="hidden h-px w-16 bg-border sm:block">
-                <span data-tracado className="block h-px w-full origin-left bg-primary" />
-              </span>
+              <ArrowRight
+                data-seta
+                aria-hidden="true"
+                className="hidden size-5 origin-left text-white sm:block"
+              />
 
-              <p
-                data-depois
-                className="rounded-[var(--radius-lg)] border border-success/25 bg-success-soft px-4 py-3 text-[0.9rem] font-medium text-success"
-              >
-                {item.depois}
-              </p>
+              {/* O que ele virou: componente real do produto. */}
+              <div data-virou className="min-w-0">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-white/80">
+                  {item.virou}
+                </p>
+                <div className="mt-2">{item.peca}</div>
+              </div>
             </li>
           ))}
         </ul>
-      </div>
-    </section>
+      </section>
+    </Capitulo>
   );
 }

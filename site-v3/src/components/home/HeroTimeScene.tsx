@@ -1,11 +1,12 @@
 import { useRef } from "react";
 import { ArrowDown } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { InviteDialog } from "@/components/site/InviteDialog";
 import { ScrollClock } from "@/components/home/ScrollClock";
 import { ChaosNotifications } from "@/components/home/ChaosNotifications";
-import { useScrollScene } from "@/lib/motion";
+import { useScrollScene, useReducedMotion } from "@/lib/motion";
 
 /**
  * Capítulo 1 — o tempo está correndo, e a agenda se abre.
@@ -21,6 +22,7 @@ import { useScrollScene } from "@/lib/motion";
  */
 export function HeroTimeScene() {
   const secao = useRef<HTMLElement>(null);
+  const estatico = useReducedMotion();
 
   useScrollScene(secao, ({ gsap }) => {
     const linha = gsap.timeline({
@@ -59,10 +61,13 @@ export function HeroTimeScene() {
       );
     });
 
-    // As folhas laterais se abrem. É a promessa do capítulo: abrir espaço.
+    // As folhas se abrem — o momento de maior impacto do capítulo. Ocupam
+    // quase metade da tela cada, então o gesto é grande, e a luz que entra
+    // acompanha a abertura.
     linha
-      .to("[data-folha='esquerda']", { xPercent: -100, ease: "power2.inOut" }, 0.15)
-      .to("[data-folha='direita']", { xPercent: 100, ease: "power2.inOut" }, 0.15);
+      .to("[data-folha='esquerda']", { xPercent: -100, ease: "power2.inOut", duration: 0.7 }, 0.08)
+      .to("[data-folha='direita']", { xPercent: 100, ease: "power2.inOut", duration: 0.7 }, 0.08)
+      .to("[data-hero-luz]", { opacity: 1, ease: "power1.out", duration: 0.5 }, 0.25);
 
     // O texto sobe um pouco mais devagar que o resto: profundidade sem blur.
     linha.to("[data-hero-texto]", { y: -70, opacity: 0.15, ease: "none" }, 0);
@@ -89,7 +94,7 @@ export function HeroTimeScene() {
       <div
         data-hero-relogio
         aria-hidden="true"
-        className="pointer-events-none absolute -z-10 opacity-90
+        className="pointer-events-none absolute -z-10
                    left-1/2 top-1/2 h-[104vmin] w-[104vmin] -translate-x-1/2 -translate-y-1/2
                    lg:left-auto lg:right-[-14vw] lg:h-[96vmin] lg:w-[96vmin] lg:translate-x-0"
       >
@@ -100,18 +105,44 @@ export function HeroTimeScene() {
       <ChaosNotifications className="-z-[5]" />
 
       {/* As folhas da agenda, que se abrem ao rolar. */}
+      {/* As folhas da agenda. Largas o bastante para a abertura ser um evento,
+          com teto de 24rem: em 1920 duas folhas de 42vw cobriam 84% da tela e
+          o hero abria praticamente vazio, escondendo relógio e interrupções.
+          A borda interna carrega um fio de luz — é o vinco da folha. */}
       <div
         aria-hidden="true"
         data-folha="esquerda"
-        className="pointer-events-none absolute inset-y-0 left-0 -z-[3] w-[22vw] border-r border-border bg-background/80"
+        style={estatico ? { transform: "translateX(-100%)" } : undefined}
+        className="pointer-events-none absolute inset-y-0 left-0 -z-[3] w-[26vw] max-w-[24rem] bg-background
+                   shadow-[inset_-24px_0_48px_-24px_rgba(28,21,21,0.10)]
+                   after:absolute after:inset-y-0 after:right-0 after:w-px
+                   after:bg-gradient-to-b after:from-transparent after:via-primary/35 after:to-transparent"
       />
       <div
         aria-hidden="true"
         data-folha="direita"
-        className="pointer-events-none absolute inset-y-0 right-0 -z-[3] w-[22vw] border-l border-border bg-background/80"
+        style={estatico ? { transform: "translateX(100%)" } : undefined}
+        className="pointer-events-none absolute inset-y-0 right-0 -z-[3] w-[26vw] max-w-[24rem] bg-background
+                   shadow-[inset_24px_0_48px_-24px_rgba(28,21,21,0.10)]
+                   before:absolute before:inset-y-0 before:left-0 before:w-px
+                   before:bg-gradient-to-b before:from-transparent before:via-primary/35 before:to-transparent"
       />
 
-      <div data-hero-texto className="mx-auto w-full max-w-6xl px-5 sm:px-8">
+      {/* A luz que entra quando a agenda abre. */}
+      <div
+        aria-hidden="true"
+        data-hero-luz
+        className={cn(
+          "pointer-events-none absolute inset-0 -z-[4]",
+          estatico ? "opacity-100" : "opacity-0",
+        )}
+        style={{
+          background:
+            "radial-gradient(60% 55% at 50% 45%, var(--color-primary-soft) 0%, transparent 70%)",
+        }}
+      />
+
+      <div data-hero-texto className="mx-auto w-full max-w-[76rem] px-5 sm:px-8 2xl:max-w-[90rem]">
         <div className="max-w-xl rounded-[var(--radius-2xl)] bg-surface/70 p-6 backdrop-blur-[2px] sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
           <p className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             <span aria-hidden="true" className="inline-block h-px w-8 bg-primary" />O tempo se abre
@@ -130,7 +161,7 @@ export function HeroTimeScene() {
             <InviteDialog
               trigger={
                 <Button variant="brand" size="pill">
-                  Marca um Appointment
+                  Solicitar acesso
                 </Button>
               }
             />
@@ -138,6 +169,10 @@ export function HeroTimeScene() {
               <a href="#como-funciona">Descubra como funciona</a>
             </Button>
           </div>
+
+          <p className="mt-5 max-w-md text-sm text-muted-foreground">
+            O acesso é liberado por convite, em levas, enquanto o aplicativo não chega às lojas.
+          </p>
         </div>
       </div>
 

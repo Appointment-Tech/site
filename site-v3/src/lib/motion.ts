@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 
 /**
  * Base de animação por scroll da home.
@@ -13,6 +13,32 @@ import { useEffect, useRef, type RefObject } from "react";
  *   nenhuma informação depende de a animação rodar.
  */
 
+/**
+ * A preferência do visitante, para uso DENTRO da renderização.
+ *
+ * Não dá para ler `matchMedia` direto no corpo do componente: o servidor não
+ * conhece a preferência e renderiza a versão animada, enquanto o cliente
+ * renderiza a estática — o que produz erro de hidratação (React #418). Aqui o
+ * primeiro render sempre bate com o do servidor, e a troca acontece logo
+ * depois, no efeito.
+ */
+export function useReducedMotion(): boolean {
+  const [reduzido, setReduzido] = useState(false);
+
+  useEffect(() => {
+    if (!window.matchMedia) return;
+    const consulta = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduzido(consulta.matches);
+
+    const aoMudar = (evento: MediaQueryListEvent) => setReduzido(evento.matches);
+    consulta.addEventListener("change", aoMudar);
+    return () => consulta.removeEventListener("change", aoMudar);
+  }, []);
+
+  return reduzido;
+}
+
+/** Leitura direta, só para uso FORA da renderização (efeitos, timelines). */
 export function prefersReducedMotion(): boolean {
   if (typeof window === "undefined" || !window.matchMedia) return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;

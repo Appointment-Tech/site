@@ -89,7 +89,7 @@ const INTERRUPCOES = [
 ] as const;
 
 const ESTILO_POR_TIPO = {
-  mensagem: "border-border bg-card",
+  mensagem: "border-border bg-card text-foreground",
   ligacao: "border-warning/30 bg-warning-soft",
   falta: "border-destructive/25 bg-destructive-soft",
   conflito: "border-primary/25 bg-primary-soft",
@@ -116,9 +116,12 @@ export function ChaosNotifications({ className }: { className?: string }) {
           }
           className={cn(
             "absolute left-[var(--pos-x)] top-[var(--pos-y)]",
+            // Limite de segurança: sem isto um cartão largo encosta na borda
+            // e lê como corte acidental, não como profundidade.
+            "max-[calc(100vw-2rem)]",
             "sm:left-[var(--pos-x-sm)] sm:top-[var(--pos-y-sm)]",
             "max-w-[12rem] rounded-[var(--radius-lg)] border px-3 py-2 sm:w-max sm:max-w-[15rem] sm:px-4 sm:py-3",
-            "shadow-[var(--shadow-card)] backdrop-blur-[2px]",
+            "shadow-[var(--shadow-lift)] backdrop-blur-[2px]",
             item.sempre ? "" : "hidden sm:block",
             ESTILO_POR_TIPO[item.tipo],
           )}

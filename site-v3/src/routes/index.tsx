@@ -6,6 +6,8 @@ import { UnifiedTimeline } from "@/components/home/UnifiedTimeline";
 import { AudienceJourney } from "@/components/home/AudienceJourney";
 import { BeforeAfterFlow } from "@/components/home/BeforeAfterFlow";
 import { FinalCTA } from "@/components/home/FinalCTA";
+import { PainelDiagnostico } from "@/components/home/PainelDiagnostico";
+import { TrilhoCapitulos } from "@/components/home/TrilhoCapitulos";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -42,6 +44,9 @@ export const Route = createFileRoute("/")({
 function Home() {
   return (
     <>
+      {/* Presença constante da marca na borda, sem pintar superfície. */}
+      <TrilhoCapitulos />
+
       {/* 1. O tempo está correndo — e a agenda se abre. */}
       <HeroTimeScene />
 
@@ -56,6 +61,11 @@ function Home() {
 
       {/* 5. Do problema à confirmação. */}
       <BeforeAfterFlow />
+
+      {/* Conferência de sincronia das cenas. Só existe com `?debugScroll=1`;
+          a decisão é tomada depois da hidratação, então o HTML servido a
+          qualquer visitante sai sem o painel. */}
+      <PainelDiagnostico />
 
       {/* 6. Seu tempo volta para você. */}
       <FinalCTA />

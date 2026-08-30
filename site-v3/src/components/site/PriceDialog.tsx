@@ -101,7 +101,13 @@ export function PriceDialog({ trigger }: { trigger: ReactNode }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="price-nome">Responsável</Label>
-            <Input id="price-nome" name="nome" required autoComplete="name" placeholder="Quem fala com a gente" />
+            <Input
+              id="price-nome"
+              name="nome"
+              required
+              autoComplete="name"
+              placeholder="Quem fala com a gente"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="price-email">E-mail</Label>
@@ -116,7 +122,14 @@ export function PriceDialog({ trigger }: { trigger: ReactNode }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="price-whats">WhatsApp</Label>
-            <Input id="price-whats" name="whatsapp" type="tel" required inputMode="tel" placeholder="(11) 90000-0000" />
+            <Input
+              id="price-whats"
+              name="whatsapp"
+              type="tel"
+              required
+              inputMode="tel"
+              placeholder="(11) 90000-0000"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="price-porte">Profissionais em agenda</Label>
@@ -143,7 +156,10 @@ export function PriceDialog({ trigger }: { trigger: ReactNode }) {
           </div>
 
           {error ? (
-            <p role="alert" className="rounded-[var(--radius-md)] bg-primary-soft px-3 py-2 text-sm text-primary">
+            <p
+              role="alert"
+              className="rounded-[var(--radius-md)] bg-primary-soft px-3 py-2 text-sm text-primary"
+            >
               Não deu para enviar: {error}. Tente de novo em instantes.
             </p>
           ) : null}

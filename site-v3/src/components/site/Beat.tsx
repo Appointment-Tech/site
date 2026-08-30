@@ -40,14 +40,7 @@ const sizeClass: Record<NonNullable<BeatProps["size"]>, string> = {
  * <div data-scene-slot> vazia por baixo do conteúdo. O conteúdo é HTML real e
  * fica legível sem nenhum JavaScript — a cena é sempre uma camada por cima.
  */
-export function Beat({
-  beat,
-  id,
-  children,
-  className,
-  tone = "base",
-  size = "md",
-}: BeatProps) {
+export function Beat({ beat, id, children, className, tone = "base", size = "md" }: BeatProps) {
   return (
     <section
       data-beat={beat}
@@ -60,13 +53,7 @@ export function Beat({
   );
 }
 
-export function BeatLabel({
-  children,
-  invert = false,
-}: {
-  children: ReactNode;
-  invert?: boolean;
-}) {
+export function BeatLabel({ children, invert = false }: { children: ReactNode; invert?: boolean }) {
   return (
     <p
       className={cn(

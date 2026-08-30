@@ -16,7 +16,7 @@ export function SiteFooter() {
             <InviteDialog
               trigger={
                 <Button variant="brand" className="mt-5 rounded-full">
-                  Pedir convite
+                  Solicitar acesso
                 </Button>
               }
             />

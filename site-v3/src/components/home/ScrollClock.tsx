@@ -82,7 +82,7 @@ export const ScrollClock = forwardRef<SVGSVGElement, { className?: string }>(fun
         r="158"
         fill="none"
         stroke="url(#clock-marca)"
-        strokeWidth="2"
+        strokeWidth="3.5"
         strokeLinecap="round"
         pathLength={1}
         strokeDasharray="1 1"
@@ -98,10 +98,10 @@ export const ScrollClock = forwardRef<SVGSVGElement, { className?: string }>(fun
             y1={hora ? 36 : 42}
             x2="200"
             y2={hora ? 52 : 48}
-            stroke="var(--color-foreground)"
-            strokeWidth={hora ? 2 : 1}
+            stroke={hora ? "var(--appointment-red)" : "var(--color-foreground)"}
+            strokeWidth={hora ? 2.5 : 1}
             strokeLinecap="round"
-            opacity={hora ? 0.5 : 0.18}
+            opacity={hora ? 0.55 : 0.18}
             transform={`rotate(${angulo} 200 200)`}
           />
         ))}
@@ -114,10 +114,10 @@ export const ScrollClock = forwardRef<SVGSVGElement, { className?: string }>(fun
           y1="200"
           x2="200"
           y2="112"
-          stroke="var(--color-foreground)"
-          strokeWidth="4"
+          stroke="var(--appointment-red-dark)"
+          strokeWidth="4.5"
           strokeLinecap="round"
-          opacity="0.32"
+          opacity="0.85"
         />
       </g>
       <g data-clock-ponteiro-minuto style={{ transformOrigin: "200px 200px" }}>
@@ -129,7 +129,7 @@ export const ScrollClock = forwardRef<SVGSVGElement, { className?: string }>(fun
           stroke="var(--color-foreground)"
           strokeWidth="2.5"
           strokeLinecap="round"
-          opacity="0.22"
+          opacity="0.45"
         />
       </g>
       <g data-clock-ponteiro-segundo style={{ transformOrigin: "200px 200px" }}>
@@ -138,10 +138,10 @@ export const ScrollClock = forwardRef<SVGSVGElement, { className?: string }>(fun
           y1="216"
           x2="200"
           y2="56"
-          stroke="var(--color-primary)"
-          strokeWidth="1.5"
+          stroke="var(--appointment-red)"
+          strokeWidth="1.8"
           strokeLinecap="round"
-          opacity="0.5"
+          opacity="0.9"
         />
       </g>
 

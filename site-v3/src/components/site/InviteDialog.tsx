@@ -66,7 +66,7 @@ export function InviteDialog({
       }
 
       setOpen(false);
-      toast.success("Convite solicitado", {
+      toast.success("Acesso solicitado", {
         description: "Assim que abrirmos sua leva, você recebe o acesso.",
       });
     } catch (cause) {
@@ -83,16 +83,23 @@ export function InviteDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[92dvh] overflow-y-auto rounded-[var(--radius-xl)] border-border bg-card sm:max-w-[30rem]">
         <DialogHeader className="text-left">
-          <DialogTitle className="text-2xl">Pedir convite</DialogTitle>
+          <DialogTitle className="text-2xl">Solicitar acesso</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Acesso antecipado ao Appointment. Chamamos por ordem de entrada.
+            O Appointment ainda não está nas lojas: o acesso é liberado por convite, em levas, por
+            ordem de entrada.
           </DialogDescription>
         </DialogHeader>
 
         <form className="mt-2 space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="invite-nome">Nome</Label>
-            <Input id="invite-nome" name="nome" required autoComplete="name" placeholder="Como te chamamos" />
+            <Input
+              id="invite-nome"
+              name="nome"
+              required
+              autoComplete="name"
+              placeholder="Como te chamamos"
+            />
           </div>
 
           <div className="space-y-2">
@@ -167,13 +174,16 @@ export function InviteDialog({
           </fieldset>
 
           {error ? (
-            <p role="alert" className="rounded-[var(--radius-md)] bg-primary-soft px-3 py-2 text-sm text-primary">
+            <p
+              role="alert"
+              className="rounded-[var(--radius-md)] bg-primary-soft px-3 py-2 text-sm text-primary"
+            >
               Não deu para enviar: {error}. Tente de novo em instantes.
             </p>
           ) : null}
 
           <Button type="submit" variant="brand" size="lg" className="w-full" disabled={sending}>
-            {sending ? "Enviando…" : "Quero meu convite"}
+            {sending ? "Enviando…" : "Quero meu acesso"}
           </Button>
           <p className="text-xs text-muted-foreground">
             Sem cobrança agora. Usamos seus dados só para liberar o acesso.

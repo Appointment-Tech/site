@@ -40,7 +40,7 @@ export function SiteHeader() {
           <InviteDialog
             trigger={
               <Button variant="brand" className="hidden rounded-full sm:inline-flex">
-                Pedir convite
+                Solicitar acesso
               </Button>
             }
           />
@@ -81,7 +81,7 @@ export function SiteHeader() {
               <InviteDialog
                 trigger={
                   <Button variant="brand" size="lg" className="w-full rounded-full">
-                    Pedir convite
+                    Solicitar acesso
                   </Button>
                 }
               />

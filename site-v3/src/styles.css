@@ -44,6 +44,19 @@
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
 
+  /*
+   * A escala do vermelho da marca. Não é cor nova: os cinco degraus saem de
+   * --primary (#e8153f) e do --gradient-brand que já existiam. Ter a escala
+   * nomeada é o que permite o vermelho funcionar como sistema de orientação
+   * — arco do relógio, trilho dos capítulos, estado ativo, seleção — e não
+   * só como cor de botão.
+   */
+  --color-marca: var(--appointment-red);
+  --color-marca-hover: var(--appointment-red-hover);
+  --color-marca-soft: var(--appointment-red-soft);
+  --color-marca-muted: var(--appointment-red-muted);
+  --color-marca-dark: var(--appointment-red-dark);
+
   --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 
@@ -90,6 +103,20 @@
   --info-soft: #e3f2ff;
 
   --gradient-brand: linear-gradient(135deg, #dd002c 0%, #c10027 100%);
+
+  /*
+   * Escala do vermelho Appointment.
+   *
+   * `red` e `red-soft` SÃO --primary e --primary-soft, repetidos aqui só para
+   * a escala ficar legível de uma vez. `hover` e `dark` derivam do
+   * --gradient-brand, que já era a versão escura da marca. `muted` é a lavagem
+   * mais clara possível, para fundo de capítulo sem virar bloco colorido.
+   */
+  --appointment-red: #e8153f;
+  --appointment-red-hover: #c10027;
+  --appointment-red-soft: #ffe9e9;
+  --appointment-red-muted: color-mix(in srgb, var(--appointment-red) 3%, white);
+  --appointment-red-dark: #7d0b25;
 }
 
 @layer base {

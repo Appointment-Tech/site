@@ -41,7 +41,10 @@ export function PainList({
       <h3 className="mt-3 text-xl">{title}</h3>
       <ul className="mt-5 space-y-3">
         {items.map((item) => (
-          <li key={item} className="flex gap-3 text-[0.95rem] leading-relaxed text-muted-foreground">
+          <li
+            key={item}
+            className="flex gap-3 text-[0.95rem] leading-relaxed text-muted-foreground"
+          >
             <span
               aria-hidden="true"
               className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
