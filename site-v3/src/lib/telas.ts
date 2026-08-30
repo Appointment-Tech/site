@@ -21,4 +21,25 @@ export const telas = {
       "exibindo a próxima data livre e os horários disponíveis — 9h, 10h30 e 14h — " +
       "com o botão de agendar ao lado.",
   },
+  carteira: {
+    src: "/telas/03-carteira-extrato.png",
+    alt:
+      "Tela de carteira do Appointment com saldo disponível de R$ 1.284,50, " +
+      "um cartão de crédito e uma chave Pix cadastrados, e o extrato listando " +
+      "recebimentos de atendimentos com data e horário.",
+  },
+  confirmado: {
+    src: "/telas/04-atendimento-confirmado.png",
+    alt:
+      "Tela de detalhes de um atendimento confirmado no Appointment: consulta de " +
+      "avaliação em 30/08 das 9h às 9h50, com aviso de que cancelamento e " +
+      "reagendamento estão sem multa, o participante e o chat do agendamento.",
+  },
+  perfil: {
+    src: "/telas/05-perfil-servicos.png",
+    alt:
+      "Perfil de uma profissional no Appointment, com cidade, endereços e a lista " +
+      "de serviços com seus preços: consulta de avaliação R$ 180,00, sessão de " +
+      "acompanhamento R$ 150,00 e avaliação física R$ 220,00.",
+  },
 } as const;

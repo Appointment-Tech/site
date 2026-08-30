@@ -165,12 +165,13 @@ function Home() {
             </ul>
           </div>
 
-          {/* A tela real do app é o desfecho da narrativa, não uma ilustração. */}
+          {/* A tela real do app é o desfecho da narrativa, não uma ilustração:
+              o que se materializa na colisão é o atendimento já confirmado. */}
           <PhoneFrame
-            screen="agenda"
-            src={telas.agenda.src}
-            alt={telas.agenda.alt}
-            caption="A agenda do Appointment, na tela de quem atende."
+            screen="confirmado"
+            src={telas.confirmado.src}
+            alt={telas.confirmado.alt}
+            caption="O atendimento confirmado, como ele nasce no app."
           />
         </div>
       </Beat>
@@ -209,6 +210,22 @@ function Home() {
             text="Recibo e histórico guardados junto do atendimento, para os dois."
           />
         </ul>
+
+        <div className="mt-14 grid items-center gap-12 lg:grid-cols-[1fr_auto]">
+          <div>
+            <h3 className="text-2xl">O dinheiro chega junto com o histórico.</h3>
+            <p className="mt-4 measure text-[0.95rem] leading-relaxed text-muted-foreground">
+              Cada recebimento fica ligado ao atendimento que o gerou. Nada de conferir extrato de um
+              lado e agenda do outro para descobrir quem pagou o quê.
+            </p>
+          </div>
+          <PhoneFrame
+            screen="carteira"
+            src={telas.carteira.src}
+            alt={telas.carteira.alt}
+            caption="Saldo, cartões e extrato ligados aos atendimentos."
+          />
+        </div>
 
         <Card className="mt-10 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="measure text-lg">

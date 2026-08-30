@@ -140,7 +140,24 @@ function Publico() {
       </Beat>
 
       <Beat beat="dispersao" tone="surface">
-        <BeatLabel>Outros caminhos</BeatLabel>
+        <BeatLabel>Antes de marcar</BeatLabel>
+        <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto]">
+          <div>
+            <h2 className="text-3xl sm:text-4xl">Você vê o preço antes de escolher o horário.</h2>
+            <p className="mt-4 measure text-lg leading-relaxed text-muted-foreground">
+              Cada serviço leva seu valor e sua duração. Nada de perguntar quanto custa por
+              mensagem e esperar a resposta para decidir.
+            </p>
+          </div>
+          <PhoneFrame
+            screen="perfil"
+            src={telas.perfil.src}
+            alt={telas.perfil.alt}
+            caption="O perfil do profissional, com serviços e preços."
+          />
+        </div>
+
+        <h2 className="mt-16 text-2xl">Outros caminhos</h2>
         <ul className="mt-8 grid gap-5 lg:grid-cols-2">
           <PathCard
             to="/profissionais"

@@ -121,6 +121,22 @@ function Profissionais() {
           <ResolvedCard step="4" tone="success" title="Histórico" text="Quem veio, quem faltou, quanto entrou. Sem planilha." />
         </ul>
 
+        <div className="mt-14 grid items-center gap-12 lg:grid-cols-[1fr_auto]">
+          <div>
+            <h3 className="text-2xl">O que entrou, e de qual atendimento.</h3>
+            <p className="mt-4 measure text-[0.95rem] leading-relaxed text-muted-foreground">
+              Saldo, cartões e extrato no mesmo app da agenda. Cada recebimento carrega o nome do
+              cliente e o horário que o gerou — sem planilha para reconciliar no fim do mês.
+            </p>
+          </div>
+          <PhoneFrame
+            screen="carteira"
+            src={telas.carteira.src}
+            alt={telas.carteira.alt}
+            caption="Sua carteira: saldo e extrato por atendimento."
+          />
+        </div>
+
         <Card className="mt-10 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="measure text-lg">
             Comece pelo convite: liberamos por leva e ajudamos a montar sua primeira agenda.
