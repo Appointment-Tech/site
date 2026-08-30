@@ -3,11 +3,15 @@
  * (Appointment-Tech/app-r2d2). Ver ADR 0004: o app é a fonte da verdade
  * visual da v3, não o bordô de v1/v2.
  *
- * 🚨 Regra herdada do app, que vale igual aqui: o vermelho da marca é acento,
- * NUNCA fundo de tela. No app é "the selected day, the active tab, one action
- * per screen". Na v3 isso significa que a cena 3D não pode ser um campo
- * vermelho — o vermelho aparece na colisão, nas ações e nos pontos das
- * correntes, sobre o fundo quente.
+ * 🚨 Regra herdada do app, verificada na tela real capturada do emulador:
+ * o `primary` (#E8153F) é ACENTO nas telas internas — "the selected day, the
+ * active tab, one action per screen", nunca o fundo delas. O que ocupa campo
+ * cheio é o GRADIENTE da marca (--v3-brand-start → --v3-brand-end), e só em
+ * tela de entrada: é assim que a tela de boas-vindas do app é pintada.
+ *
+ * Na v3 isso se traduz em: a cena 3D pode ter momentos de campo vermelho, mas
+ * com o gradiente, não com o primary; e as seções de conteúdo ficam sobre o
+ * fundo quente, com o primary aparecendo na colisão e nas ações.
  *
  * Cor de marca nova entra no app primeiro. Se um valor aqui divergir do
  * app, o app vence.
