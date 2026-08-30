@@ -1,0 +1,184 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+/*
+ * Appointment — design system v3
+ * Tokens vindos do design system do app real (lib/app/styles/ do app-r2d2).
+ * Não inventar cor de marca: cor nova entra no app primeiro. Ver ADR 0004.
+ */
+
+@theme inline {
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-neutral-soft: var(--neutral-soft);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-card: 0 1px 2px rgba(28, 21, 21, 0.04), 0 8px 24px rgba(28, 21, 21, 0.06);
+  --shadow-lift: 0 2px 4px rgba(28, 21, 21, 0.05), 0 18px 44px rgba(28, 21, 21, 0.1);
+}
+
+:root {
+  --radius: 16px;
+
+  --background: #fdfbf9;
+  --surface: #f4f2f0;
+  --card: #ffffff;
+  --card-foreground: #1c1515;
+  --neutral-soft: #f4f0ee;
+
+  --foreground: #1c1515;
+  --muted: #f4f0ee;
+  --muted-foreground: #776e6c;
+  --border: #e6e3e1;
+  --input: #e6e3e1;
+  --ring: #e8153f;
+
+  --primary: #e8153f;
+  --primary-foreground: #ffffff;
+  --primary-soft: #ffe9e9;
+
+  --secondary: #f4f2f0;
+  --secondary-foreground: #1c1515;
+  --accent: #f4f0ee;
+  --accent-foreground: #1c1515;
+
+  --popover: #ffffff;
+  --popover-foreground: #1c1515;
+
+  --destructive: #76382e;
+  --destructive-foreground: #ffffff;
+
+  --success: #1e7c50;
+  --success-soft: #e0f7e9;
+  --warning: #b07a20;
+  --warning-soft: #fff1d5;
+  --info: #4077a3;
+  --info-soft: #e3f2ff;
+
+  --gradient-brand: linear-gradient(135deg, #dd002c 0%, #c10027 100%);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv01";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--primary-soft);
+    color: var(--foreground);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---- utilitários de marca ---- */
+
+@utility brand-gradient {
+  background-image: var(--gradient-brand);
+}
+
+@utility text-gradient-brand {
+  background-image: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Linha fina que sugere a "corrente" de cada lado. Puramente decorativa. */
+@utility stream-rule {
+  height: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-border) 12%,
+    var(--color-border) 88%,
+    transparent
+  );
+}
+
+/* Slot onde a camada 3D é plugada depois. Sem JS ele é invisível. */
+@utility scene-slot {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+@utility measure {
+  max-width: 62ch;
+}

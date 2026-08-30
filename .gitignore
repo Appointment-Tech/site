@@ -4,3 +4,10 @@ dist/
 *.local
 .output/
 package-lock.json
+
+# site-v3 (projeto próprio, mesmas exclusões da raiz)
+site-v3/node_modules/
+site-v3/.output/
+site-v3/.nitro/
+site-v3/.tanstack/
+site-v3/src/routeTree.gen.ts
