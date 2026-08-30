@@ -18,5 +18,21 @@ services:
     ports:
       - "127.0.0.1:3102:80"
 
+  # A v3 coexiste com v1 e v2 (ADR 0002). Contexto próprio em site-v3/, e
+  # porta 3103 — as outras já ocupam 3101 e 3102 no Apache do host.
+  #
+  # 🚨 A caixa tem 1 vCPU / 2 GB: builde um serviço por vez
+  # (`docker compose build site-v3`), nunca os três de uma vez.
+  site-v3:
+    build:
+      context: ./site-v3
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:3103:3000"
+    volumes:
+      - site_leads:/data/leads
+
 volumes:
   site_leads:

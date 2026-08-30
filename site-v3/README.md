@@ -58,3 +58,21 @@ rodando em emulador no **modo de captura**, com dados fictícios e sem rede
 nunca contêm dado de cliente real. Para regenerá-las, recapture no emulador.
 
 O mapa de telas, com os textos alternativos, fica em `src/lib/telas.ts`.
+
+## Deploy
+
+Sobe como um terceiro serviço no mesmo `docker-compose.yml` do repo, na porta
+**3103** (v1 usa 3101, v2 usa 3102). Quem faz o proxy é o **Apache do host**,
+não nginx — o vhost de `v3.marcaumappointment.com` precisa ser criado e apontar
+para `127.0.0.1:3103`, e o certificado emitido pelo certbot já ativo na caixa.
+
+🚨 **O droplet tem 1 vCPU e 2 GB.** Builde um serviço por vez
+(`docker compose build site-v3`), nunca os três juntos — foi o que já foi
+preciso fazer no deploy do preloader.
+
+Antes de trocar qualquer coisa, marque a imagem atual para rollback:
+`docker tag html-site-v3:latest html-site-v3:pre-<mudança>`.
+
+O serviço compartilha o volume `site_leads` com a v1: as server routes de
+Convite e Consulta de Preço gravam a cópia local de backup no mesmo lugar, e
+usam o mesmo `.env` (credencial do Resend).
