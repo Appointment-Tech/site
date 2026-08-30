@@ -13,7 +13,6 @@ import appCss from "../styles.css?url";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { Toaster } from "@/components/ui/sonner";
-import { SceneLayer } from "@/components/site/SceneLayer";
 import { Preloader } from "@/components/site/Preloader";
 import {
   PRELOADER_NOSCRIPT_CSS,
@@ -153,9 +152,14 @@ function RootComponent() {
       >
         Pular para o conteúdo
       </a>
-      {/* A cena vive aqui, acima do <Outlet>, para não ser remontada a cada
-          navegação — trocar de rota só reconfigura as correntes (ADR 0002). */}
-      <SceneLayer />
+      {/*
+        A cena está DESLIGADA. Cinco iterações não chegaram a um resultado
+        aceitável — o último estado, blocos de horário atravessando uma faixa,
+        foi reprovado como ruído visual. O código continua em src/scene/ e o
+        contrato dos momentos (data-beat / data-scene-stage) segue de pé; falta
+        acertar a linguagem visual, e isso depende de uma referência do que se
+        espera. Religar é reimportar SceneLayer e inseri-lo aqui.
+      */}
       <SiteHeader />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <main id="conteudo">

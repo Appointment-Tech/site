@@ -138,44 +138,35 @@ function Home() {
 
       {/* 3. colisão — o encontro, tela real do app */}
       <Beat beat="colisao" tone="surface" size="lg">
-        <div className="max-w-3xl">
-          <BeatLabel>O encontro</BeatLabel>
-          <SectionHeading
-            title="Aqui os dois lados se cristalizam num atendimento."
-            lead="A disponibilidade que o profissional publicou é exatamente a que o cliente vê. Escolheu, está marcado."
-          />
-        </div>
-
-        {/*
-          O palco da cena: uma faixa de largura total, logo abaixo do título —
-          onde o olho já está. Espremida numa coluna estreita a animação não
-          tinha distância para acontecer e lia como placeholder de
-          carregamento; no fim da seção, ficava fora da vista. Aqui os blocos
-          entram pelas duas bordas, atravessam e se encontram no meio.
-          Some abaixo de `lg`, onde não há largura para o percurso.
-        */}
-        <div
-          data-scene-stage
-          aria-hidden="true"
-          className="mt-10 hidden h-72 w-full lg:block"
-        />
-
-        <div className="mt-12 grid items-center gap-14 lg:grid-cols-[1fr_auto]">
-          <ul className="space-y-4">
-            {[
-              ["Disponibilidade real", "Sem horário fantasma: o que aparece está livre agora."],
-              ["Confirmação na hora", "Os dois lados recebem o mesmo aviso, ao mesmo tempo."],
-              ["Pagamento junto", "Cartão ou PIX via ASAAS, no mesmo passo do agendamento."],
-            ].map(([title, text]) => (
-              <li key={title} className="flex gap-4">
-                <span aria-hidden="true" className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                <p className="text-[0.95rem] leading-relaxed">
-                  <strong className="font-semibold">{title}.</strong>{" "}
-                  <span className="text-muted-foreground">{text}</span>
-                </p>
-              </li>
-            ))}
-          </ul>
+        {/* Sem a cena, a seção volta ao par texto/moldura: título, lead e lista
+            na mesma coluna. Separá-los deixava um vão vazio no meio, porque a
+            moldura é alta e a lista, curta. */}
+        <div className="grid items-center gap-14 lg:grid-cols-[1fr_auto]">
+          <div>
+            <BeatLabel>O encontro</BeatLabel>
+            <SectionHeading
+              title="Aqui os dois lados se cristalizam num atendimento."
+              lead="A disponibilidade que o profissional publicou é exatamente a que o cliente vê. Escolheu, está marcado."
+            />
+            <ul className="mt-8 space-y-4">
+              {[
+                ["Disponibilidade real", "Sem horário fantasma: o que aparece está livre agora."],
+                ["Confirmação na hora", "Os dois lados recebem o mesmo aviso, ao mesmo tempo."],
+                ["Pagamento junto", "Cartão ou PIX via ASAAS, no mesmo passo do agendamento."],
+              ].map(([title, text]) => (
+                <li key={title} className="flex gap-4">
+                  <span
+                    aria-hidden="true"
+                    className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary"
+                  />
+                  <p className="text-[0.95rem] leading-relaxed">
+                    <strong className="font-semibold">{title}.</strong>{" "}
+                    <span className="text-muted-foreground">{text}</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {/* A tela real do app é o desfecho da narrativa, não uma ilustração:
               o que se materializa na colisão é o atendimento já confirmado. */}
