@@ -13,9 +13,19 @@ type BeatProps = {
   size?: "sm" | "md" | "lg";
 };
 
+/**
+ * Os fundos são semitransparentes de propósito: a cena 3D vive num canvas fixo
+ * atrás do documento, e uma seção com fundo opaco a esconde por completo — foi
+ * o que aconteceu na primeira versão, em que a cena rodava e ninguém via.
+ *
+ * A opacidade é alta o bastante para o texto manter contraste AA: a cena
+ * aparece como movimento por trás do conteúdo, não como concorrente dele.
+ */
 const toneClass: Record<NonNullable<BeatProps["tone"]>, string> = {
-  base: "bg-background text-foreground",
-  surface: "bg-surface text-foreground",
+  base: "bg-background/75 text-foreground",
+  surface: "bg-surface/80 text-foreground",
+  // O hero é o único campo cheio: ali a cena fica por baixo do gradiente da
+  // marca, quase imperceptível, e é assim que deve ser — o herói é o texto.
   brand: "brand-gradient text-white",
 };
 
@@ -42,7 +52,7 @@ export function Beat({
     <section
       data-beat={beat}
       id={id ?? beat}
-      className={cn("relative isolate overflow-hidden", toneClass[tone], sizeClass[size], className)}
+      className={cn("relative overflow-hidden", toneClass[tone], sizeClass[size], className)}
     >
       <div data-scene-slot aria-hidden="true" className="scene-slot" />
       <div className="relative z-10 mx-auto w-full max-w-6xl px-5 sm:px-8">{children}</div>

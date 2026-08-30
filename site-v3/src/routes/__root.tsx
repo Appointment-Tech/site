@@ -14,6 +14,14 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { Toaster } from "@/components/ui/sonner";
 import { SceneLayer } from "@/components/site/SceneLayer";
+import { Preloader } from "@/components/site/Preloader";
+import {
+  PRELOADER_NOSCRIPT_CSS,
+  PRELOADER_STYLE_ID,
+  PRELOADING_CLASS,
+  preloaderCss,
+} from "@/lib/preloader/markup";
+import { V3_THEME } from "@/lib/preloader/theme";
 
 function NotFoundComponent() {
   return (
@@ -109,11 +117,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={PRELOADING_CLASS}>
       <head>
         <HeadContent />
+        {/* Inline, não um <link>: a tela de carregamento precisa pintar no
+            primeiro frame, antes de o styles.css ter sido sequer pedido. */}
+        <style
+          id={PRELOADER_STYLE_ID}
+          dangerouslySetInnerHTML={{ __html: preloaderCss(V3_THEME) }}
+        />
+        {/* Sem JS a classe no <html> nunca sai: este bloco derruba o véu. */}
+        <noscript>
+          <style dangerouslySetInnerHTML={{ __html: PRELOADER_NOSCRIPT_CSS }} />
+        </noscript>
       </head>
       <body>
+        {/* Primeiro elemento do body: numa conexão lenta o véu já está na tela
+            enquanto o resto do documento ainda está chegando. */}
+        <Preloader />
         {children}
         <Scripts />
       </body>

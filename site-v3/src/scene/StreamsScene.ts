@@ -1,56 +1,79 @@
 import * as THREE from "three";
 
-import { BEATS, DEFAULT_BEAT, isBeatName, mixBeats, type BeatConfig, type BeatName } from "./beats";
+import { BEATS, DEFAULT_BEAT, isBeatName, mixBeats, type BeatConfig } from "./beats";
 import { pickBudget, shouldRunScene, type SceneBudget } from "./capabilities";
+import { buildSlotAtlas, SLOT_LABELS } from "./slotAtlas";
 
 /**
- * A cena das duas correntes.
+ * A cena da v3: dois lados de uma agenda que se encontram.
  *
- * Duas nuvens de partículas atravessam a tela em direções opostas — quem atende
- * vindo da esquerda, quem marca vindo da direita — e convergem no centro
- * conforme o scroll avança pelos momentos da narrativa. No momento `colisao`
- * elas se fecham sobre o ponto onde a página mostra a tela real do app.
+ * Cada elemento é um **bloco de horário** com o rótulo desenhado nele. Os que
+ * vêm da esquerda são a disponibilidade que o profissional publicou; os da
+ * direita, os horários que o cliente procura. Conforme o scroll avança pelos
+ * momentos, as duas colunas se aproximam, se alinham numa grade de agenda e
+ * encaixam par a par — e o bloco encaixado vira **verde**, o mesmo verde que o
+ * app usa no status "Confirmado".
  *
  * Decisões que valem registrar:
  *
- * - **Uma cena para o site inteiro.** Ela vive acima do roteador e não é
- *   remontada a cada navegação (ADR 0002): trocar de página só reconfigura as
- *   correntes. Remontar custaria recriar buffers e recompilar shaders a cada
- *   clique.
- * - **Dois `Points`, não milhares de meshes.** Cada corrente é um único
- *   `BufferGeometry` com atributos por partícula; a posição é calculada no
- *   vertex shader a partir de uma semente fixa, então a CPU só escreve uniforms
- *   por frame — nada de mexer em atributo em JavaScript.
- * - **O vermelho da marca é acento, não campo.** As partículas usam o
- *   `--primary` só ao colidir; longe do centro elas são quase neutras. Campo
- *   cheio de vermelho é do gradiente do hero, e isso é CSS, não WebGL.
+ * - **Uma cena para o site inteiro**, montada acima do roteador (ADR 0002):
+ *   trocar de rota reconfigura os blocos, não remonta a cena. Remontar
+ *   recriaria buffers e recompilaria shaders a cada clique.
+ * - **Um `InstancedMesh`**, não um objeto por bloco: a posição, a cor e o
+ *   rótulo saem do vertex shader a partir de atributos fixos por instância, de
+ *   modo que a CPU só escreve uniforms por frame.
+ * - **As cores vêm dos tokens CSS** (`--primary`, `--success`, `--border`), não
+ *   escritas no shader: se a marca mudar no app, a cena acompanha (ADR 0004).
+ * - **O vermelho é acento, não campo.** Bloco livre é neutro; o vermelho marca
+ *   o instante do encaixe e o verde marca o que ficou confirmado — exatamente
+ *   a semântica de status do app.
  */
 export class StreamsScene {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
   private readonly camera: THREE.OrthographicCamera;
   private readonly budget: SceneBudget;
-  private readonly streams: THREE.Points[] = [];
+  private readonly mesh: THREE.InstancedMesh;
+  private readonly texture: THREE.CanvasTexture;
   private readonly uniforms: {
     uTime: { value: number };
     uSeparation: { value: number };
-    uFocus: { value: number };
+    uGrid: { value: number };
+    uConfirmed: { value: number };
+    uFan: { value: number };
     uEnergy: { value: number };
     uOpacity: { value: number };
     uAspect: { value: number };
-    uPrimary: { value: THREE.Color };
+    uRows: { value: number };
     uNeutral: { value: THREE.Color };
+    uPrimary: { value: THREE.Color };
+    uSuccess: { value: THREE.Color };
+    uSurface: { value: THREE.Color };
+    uAtlas: { value: THREE.Texture };
   };
 
   private frame = 0;
   private lastTime = 0;
-  /** Tempo simulado: só avança quando a cena roda, para o movimento não "pular"
+  /** Tempo simulado: só avança quando a cena roda, para o movimento não pular
    *  depois de a aba ficar oculta. */
   private clock = 0;
   private current: BeatConfig = BEATS[DEFAULT_BEAT];
   private target: BeatConfig = BEATS[DEFAULT_BEAT];
   private running = false;
   private disposed = false;
+  /** Momento do último quadro efetivamente desenhado. */
+  private lastDraw = 0;
+
+  /**
+   * A cena é pano de fundo e se move devagar: a 30 quadros por segundo ela é
+   * indistinguível de 60 e custa metade da GPU. Num site que a maioria abre
+   * pelo celular, isso é bateria — não é micro-otimização.
+   *
+   * Pausar de vez não serve aqui: os blocos derivam continuamente, então
+   * "assentada" nunca acontece de verdade e a cena congelaria no meio do
+   * movimento. O que dá para cortar é a taxa, não o loop.
+   */
+  private static readonly FRAME_INTERVAL_MS = 1000 / 30;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.budget = pickBudget();
@@ -69,106 +92,193 @@ export class StreamsScene {
     this.camera.position.z = 1;
 
     const styles = getComputedStyle(document.documentElement);
+    const token = (name: string, fallback: string) =>
+      new THREE.Color(styles.getPropertyValue(name).trim() || fallback);
+
+    const atlas = buildSlotAtlas(styles.getPropertyValue("--foreground").trim() || "#1c1515");
+    this.texture = new THREE.CanvasTexture(atlas.canvas);
+    this.texture.colorSpace = THREE.SRGBColorSpace;
+    this.texture.minFilter = THREE.LinearFilter;
+    this.texture.generateMipmaps = false;
+
     this.uniforms = {
       uTime: { value: 0 },
       uSeparation: { value: this.current.separation },
-      uFocus: { value: this.current.focus },
+      uGrid: { value: this.current.grid },
+      uConfirmed: { value: this.current.confirmed },
+      uFan: { value: this.current.fan },
       uEnergy: { value: this.current.energy },
       uOpacity: { value: this.current.opacity },
       uAspect: { value: 1 },
-      // Lidas dos tokens, não escritas à mão: se o app mudar a marca, a cena
-      // acompanha sem ninguém lembrar de editar shader (ADR 0004).
-      uPrimary: { value: new THREE.Color(styles.getPropertyValue("--primary").trim() || "#e8153f") },
-      uNeutral: { value: new THREE.Color(styles.getPropertyValue("--border").trim() || "#e6e3e1") },
+      uRows: { value: SLOT_LABELS.length },
+      uNeutral: { value: token("--border", "#e6e3e1") },
+      uPrimary: { value: token("--primary", "#e8153f") },
+      uSuccess: { value: token("--success", "#1e7c50") },
+      uSurface: { value: token("--card", "#ffffff") },
+      uAtlas: { value: this.texture },
     };
 
-    this.streams.push(this.buildStream(-1), this.buildStream(1));
-    this.streams.forEach((stream) => this.scene.add(stream));
+    this.mesh = this.buildSlots();
+    this.scene.add(this.mesh);
 
     this.resize();
   }
 
-  /** `direction` -1 é a corrente de quem atende; +1 a de quem marca. */
-  private buildStream(direction: number): THREE.Points {
-    const count = this.budget.perStream;
-    const seeds = new Float32Array(count * 3);
+  /** Um plano por bloco de horário, instanciado. */
+  private buildSlots(): THREE.InstancedMesh {
+    // Uma agenda de verdade tem uma dezena de faixas, não centenas: com muitos
+    // blocos a coluna vira uma torre sobreposta e ilegível — foi o que a
+    // primeira versão fez. O número é fixo pela narrativa, não pelo orçamento
+    // do aparelho (esse controla o pixelRatio, que é o que de fato pesa).
+    const pairs = 9;
+    const count = pairs * 2;
 
+    // Proporção de um bloco de agenda: largo e baixo, como o card de horário.
+    const geometry = new THREE.PlaneGeometry(0.23, 0.088);
+
+    const seeds = new Float32Array(count * 4);
     for (let i = 0; i < count; i += 1) {
-      // Semente estável por partícula: posição na faixa, deslocamento vertical
-      // e fase própria. Tudo o mais é derivado disto no shader.
-      seeds[i * 3 + 0] = Math.random();
-      seeds[i * 3 + 1] = Math.random() * 2 - 1;
-      seeds[i * 3 + 2] = Math.random() * Math.PI * 2;
+      const side = i % 2 === 0 ? -1 : 1; // -1 = quem atende, +1 = quem marca
+      const pair = Math.floor(i / 2);
+      seeds[i * 4 + 0] = side;
+      seeds[i * 4 + 1] = pair / Math.max(pairs - 1, 1); // posição na coluna
+      seeds[i * 4 + 2] = Math.random() * Math.PI * 2; // fase própria
+      // O rótulo vem do PAR, não da instância: os dois lados de um encaixe
+      // mostram o mesmo horário, porque é disso que o encaixe se trata — quem
+      // atende publicou 09:00 e quem marca escolheu 09:00. Sorteá-lo por
+      // instância produzia pares como "08:00 | 16:30", que negam a narrativa.
+      seeds[i * 4 + 3] = pair % SLOT_LABELS.length;
     }
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("aSeed", new THREE.BufferAttribute(seeds, 3));
-    // Sem `position` o three não calcula bounding sphere e descarta o objeto no
-    // frustum culling — daí o atributo obrigatório, ainda que o shader o ignore.
-    geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(count * 3), 3));
-    geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 4);
+    geometry.setAttribute("aSeed", new THREE.InstancedBufferAttribute(seeds, 4));
 
     const material = new THREE.ShaderMaterial({
-      uniforms: { ...this.uniforms, uDirection: { value: direction } },
+      uniforms: this.uniforms,
       transparent: true,
       depthWrite: false,
-      blending: THREE.NormalBlending,
       vertexShader: /* glsl */ `
-        attribute vec3 aSeed;
+        attribute vec4 aSeed;
+
         uniform float uTime;
         uniform float uSeparation;
-        uniform float uFocus;
+        uniform float uGrid;
+        uniform float uConfirmed;
+        uniform float uFan;
         uniform float uEnergy;
         uniform float uAspect;
-        uniform float uDirection;
-        varying float vProximity;
+        uniform float uRows;
+
+        varying vec2 vUv;
+        varying float vRow;
+        varying float vMeeting;   // 0..1 — quanto este bloco está no encaixe
+        varying float vConfirmed; // 0..1 — este bloco virou atendimento
 
         void main() {
-          float lane = aSeed.x;
-          float offset = aSeed.y;
+          float side = aSeed.x;
+          float lane = aSeed.y;
           float phase = aSeed.z;
+          vRow = aSeed.w;
 
-          // A partícula percorre a faixa e reentra pelo outro lado: fluxo
-          // contínuo sem precisar reciclar nada na CPU.
-          float travel = fract(lane + uTime * (0.03 + uEnergy * 0.05));
-          float x = mix(uDirection * 1.35, 0.0, travel) * uSeparation
-                  + uDirection * (1.0 - uSeparation) * 0.04;
+          // --- posição solta: o bloco deriva no seu próprio ritmo, longe do
+          // centro, onde vive o texto ---
+          float drift = fract(lane + uTime * (0.02 + uEnergy * 0.03));
+          float looseY = (drift * 2.0 - 1.0) * 0.8
+                       + sin(uTime * 0.7 + phase) * 0.04 * uEnergy;
+          float looseX = side * (0.72 + sin(phase) * 0.1);
 
-          // Quanto mais perto do centro, mais a corrente se fecha na linha do
-          // encontro — é o que faz a colisão parecer colisão.
-          float converge = mix(1.0, 0.12, uFocus * (1.0 - abs(x)));
-          float y = offset * 0.55 * converge
-                  + sin(uTime * (0.6 + uEnergy) + phase) * 0.03 * uEnergy;
+          // --- posição em grade: linhas de agenda espaçadas ---
+          // O espaçamento vem do numero de faixas, para as linhas nunca se
+          // sobreporem: com blocos de 0.088 de altura, 9 linhas em 1.5 sobram.
+          float gridY = (lane - 0.5) * 1.5;
 
-          vProximity = 1.0 - clamp(abs(x) * 1.6, 0.0, 1.0);
+          // No encontro os dois lados encostam, formando um par lado a lado —
+          // e nao dois blocos no mesmo lugar.
+          float gridX = side * 0.135;
 
-          vec4 mvPosition = vec4(x / uAspect, y, 0.0, 1.0);
-          gl_Position = projectionMatrix * mvPosition;
-          gl_PointSize = mix(1.5, 3.6, vProximity) * (1.0 + uEnergy * 0.4);
+          // No leque final a agenda se abre em tres colunas: os tres publicos.
+          float column = floor(lane * 2.999) - 1.0;
+          gridX = mix(gridX, column * 0.5 + side * 0.135, uFan);
+
+          float x = mix(looseX, gridX, uGrid) * mix(1.0, uSeparation, uGrid * 0.35)
+                  + side * (1.0 - uSeparation) * 0.35 * (1.0 - uGrid);
+          float y = mix(looseY, gridY, uGrid);
+
+          // Encaixe: mede o quanto as duas colunas já se fecharam.
+          vMeeting = 1.0 - clamp(uSeparation * 2.2, 0.0, 1.0);
+          // Confirmar não é tudo de uma vez: os pares fecham em ordem, de cima
+          // para baixo, e isso é o que dá leitura de "acontecendo" ao momento.
+          vConfirmed = step(lane, uConfirmed) * vMeeting;
+
+          // O bloco confirmado cresce de leve: o par virou uma coisa só.
+          float scale = 1.0 + vConfirmed * 0.12;
+
+          vec3 local = position * scale;
+          local.x /= uAspect;
+
+          vUv = uv;
+          gl_Position = projectionMatrix * vec4(local + vec3(x / uAspect, y, 0.0), 1.0);
         }
       `,
       fragmentShader: /* glsl */ `
         precision mediump float;
-        uniform vec3 uPrimary;
-        uniform vec3 uNeutral;
+
+        uniform sampler2D uAtlas;
+        uniform float uRows;
         uniform float uOpacity;
-        varying float vProximity;
+        uniform vec3 uNeutral;
+        uniform vec3 uPrimary;
+        uniform vec3 uSuccess;
+        uniform vec3 uSurface;
+
+        varying vec2 vUv;
+        varying float vRow;
+        varying float vMeeting;
+        varying float vConfirmed;
+
+        // Retângulo de cantos arredondados: o mesmo raio que o resto da página
+        // usa. Quadrado de canto vivo denunciaria o WebGL colado por cima.
+        // Atencao: "half" e palavra reservada em GLSL ES. Nomear o parametro
+        // assim faz o shader nao compilar, e a cena some sem erro na pagina.
+        float roundedBox(vec2 uv, vec2 halfSize, float radius) {
+          vec2 p = abs(uv) - halfSize + radius;
+          return length(max(p, 0.0)) - radius;
+        }
 
         void main() {
-          // Ponto redondo: o quadrado padrão do gl_PointCoord entrega "pixel",
-          // que briga com o resto da página, toda em raios arredondados.
-          vec2 centered = gl_PointCoord - vec2(0.5);
-          float dist = length(centered);
-          if (dist > 0.5) discard;
+          vec2 centered = vUv - 0.5;
+          float dist = roundedBox(centered, vec2(0.5), 0.16);
+          if (dist > 0.0) discard;
 
-          float edge = smoothstep(0.5, 0.15, dist);
-          vec3 color = mix(uNeutral, uPrimary, vProximity);
-          gl_FragColor = vec4(color, edge * uOpacity * mix(0.35, 1.0, vProximity));
+          // A borda acompanha o estado: neutra quando livre, vermelha no
+          // instante do encaixe, verde quando o atendimento está confirmado.
+          vec3 edge = mix(uNeutral, uPrimary, vMeeting);
+          edge = mix(edge, uSuccess, vConfirmed);
+
+          // O fundo da pagina e quase branco (#fdfbf9): bloco preenchido com
+          // o branco puro do card fica literalmente invisivel. Por isso o
+          // interior recebe um tingimento do proprio estado, e a borda e larga
+          // o suficiente para ler como contorno de um slot de agenda.
+          float border = smoothstep(-0.09, -0.03, dist);
+          vec3 fill = mix(uSurface, edge, 0.12 + 0.30 * max(vMeeting, vConfirmed));
+          vec3 color = mix(fill, edge, border);
+
+          // O rótulo do horário: uma linha do atlas, escolhida pelo índice.
+          vec2 labelUv = vec2(vUv.x, (vRow + vUv.y) / uRows);
+          float label = texture2D(uAtlas, labelUv).a;
+          color = mix(color, edge, label * 0.9);
+
+          // Bloco livre é discreto; confirmado tem presença.
+          float alpha = uOpacity * mix(0.7, 1.0, max(vMeeting, vConfirmed));
+          gl_FragColor = vec4(color, alpha);
         }
       `,
     });
 
-    return new THREE.Points(geometry, material);
+    const mesh = new THREE.InstancedMesh(geometry, material, count);
+    // A posição vem toda do shader; sem isto o three recalcularia matrizes por
+    // instância a cada frame, do nada.
+    mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+    mesh.frustumCulled = false;
+    return mesh;
   }
 
   /** Recebe o momento em que o scroll está, e para onde caminha. */
@@ -176,6 +286,8 @@ export class StreamsScene {
     const from = isBeatName(beat) ? BEATS[beat] : BEATS[DEFAULT_BEAT];
     const to = next && isBeatName(next) ? BEATS[next] : from;
     this.target = mixBeats(from, to, Math.min(Math.max(progress, 0), 1));
+
+    if (this.running && !this.frame) this.frame = requestAnimationFrame(this.tick);
   }
 
   resize(): void {
@@ -183,13 +295,16 @@ export class StreamsScene {
     const height = this.canvas.clientHeight || window.innerHeight;
     this.renderer.setSize(width, height, false);
     this.uniforms.uAspect.value = Math.max(width / Math.max(height, 1), 0.0001);
+
+    if (this.running && !this.frame) this.frame = requestAnimationFrame(this.tick);
   }
 
   start(): void {
     if (this.running || this.disposed) return;
     this.running = true;
     this.lastTime = performance.now();
-    this.frame = requestAnimationFrame(this.tick);
+    this.lastDraw = 0;
+    if (!this.frame) this.frame = requestAnimationFrame(this.tick);
   }
 
   /** Pausa de verdade: sem frame agendado a GPU não é tocada. */
@@ -201,6 +316,12 @@ export class StreamsScene {
 
   private readonly tick = (now: number): void => {
     if (!this.running) return;
+    this.frame = requestAnimationFrame(this.tick);
+
+    // Descarta o quadro se ainda não passou o intervalo alvo. O rAF continua
+    // sincronizado com o monitor; o que muda é quantas vezes desenhamos.
+    if (now - this.lastDraw < StreamsScene.FRAME_INTERVAL_MS) return;
+    this.lastDraw = now;
 
     // Delta limitado: voltar de uma aba oculta entregaria um salto de vários
     // segundos e a cena daria um pulo visível.
@@ -210,35 +331,39 @@ export class StreamsScene {
 
     // Aproximação exponencial do alvo: a transição entre momentos acompanha o
     // scroll sem travar nele, e o movimento nunca é brusco.
-    const ease = 1 - Math.pow(0.001, delta);
+    const ease = 1 - Math.pow(0.0015, delta);
+    const c = this.current;
+    const t = this.target;
     this.current = {
-      separation: this.current.separation + (this.target.separation - this.current.separation) * ease,
-      focus: this.current.focus + (this.target.focus - this.current.focus) * ease,
-      energy: this.current.energy + (this.target.energy - this.current.energy) * ease,
-      opacity: this.current.opacity + (this.target.opacity - this.current.opacity) * ease,
+      separation: c.separation + (t.separation - c.separation) * ease,
+      grid: c.grid + (t.grid - c.grid) * ease,
+      confirmed: c.confirmed + (t.confirmed - c.confirmed) * ease,
+      fan: c.fan + (t.fan - c.fan) * ease,
+      energy: c.energy + (t.energy - c.energy) * ease,
+      opacity: c.opacity + (t.opacity - c.opacity) * ease,
     };
 
     this.uniforms.uTime.value = this.clock;
     this.uniforms.uSeparation.value = this.current.separation;
-    this.uniforms.uFocus.value = this.current.focus;
+    this.uniforms.uGrid.value = this.current.grid;
+    this.uniforms.uConfirmed.value = this.current.confirmed;
+    this.uniforms.uFan.value = this.current.fan;
     this.uniforms.uEnergy.value = this.current.energy;
     this.uniforms.uOpacity.value = this.current.opacity;
 
     this.renderer.render(this.scene, this.camera);
-    this.frame = requestAnimationFrame(this.tick);
   };
 
   dispose(): void {
     this.stop();
     this.disposed = true;
-    this.streams.forEach((stream) => {
-      stream.geometry.dispose();
-      (stream.material as THREE.Material).dispose();
-      this.scene.remove(stream);
-    });
+    this.mesh.geometry.dispose();
+    (this.mesh.material as THREE.Material).dispose();
+    this.texture.dispose();
+    this.scene.remove(this.mesh);
     this.renderer.dispose();
   }
 }
 
 export { shouldRunScene };
-export type { BeatName };
+export type { BeatName } from "./beats";
