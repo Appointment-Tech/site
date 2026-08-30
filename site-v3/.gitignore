@@ -4,3 +4,6 @@ dist/
 *.local
 .output/
 package-lock.json
+
+# Artefatos de conferência visual (screenshots, gravação). Não versionar.
+.validacao/

@@ -17,7 +17,8 @@ export const Route = createFileRoute("/investidores")({
       { property: "og:title", content: "Investidores — Appointment" },
       {
         property: "og:description",
-        content: "Agendamento e pagamento no mesmo fluxo, para três públicos que hoje se resolvem por mensagem.",
+        content:
+          "Agendamento e pagamento no mesmo fluxo, para três públicos que hoje se resolvem por mensagem.",
       },
     ],
   }),
@@ -55,8 +56,14 @@ function Investidores() {
           lead="Quem atende administra a agenda à mão. Quem marca depende de alguém acordado do outro lado."
         />
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
-          <Stat value="3 públicos" label="Profissional autônomo, empresa com várias agendas e cliente final" />
-          <Stat value="2 sistemas" label="Agenda num lugar, cobrança em outro — conciliação manual no fim do mês" />
+          <Stat
+            value="3 públicos"
+            label="Profissional autônomo, empresa com várias agendas e cliente final"
+          />
+          <Stat
+            value="2 sistemas"
+            label="Agenda num lugar, cobrança em outro — conciliação manual no fim do mês"
+          />
           <Stat value="1 fluxo" label="A tese: marcar, confirmar e pagar no mesmo passo" />
         </div>
       </Beat>
@@ -72,11 +79,20 @@ function Investidores() {
             <ul className="mt-8 space-y-4">
               {[
                 ["Multiagenda", "Do autônomo à operação com várias unidades, no mesmo modelo."],
-                ["Pagamento integrado", "Cartão e PIX via ASAAS, ligados ao atendimento que os gerou."],
-                ["App em produção", "Flutter, publicado internamente; abertura ao público por levas de convite."],
+                [
+                  "Pagamento integrado",
+                  "Cartão e PIX via ASAAS, ligados ao atendimento que os gerou.",
+                ],
+                [
+                  "App em produção",
+                  "Flutter, publicado internamente; abertura ao público por levas de convite.",
+                ],
               ].map(([title, text]) => (
                 <li key={title} className="flex gap-4">
-                  <span aria-hidden="true" className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span
+                    aria-hidden="true"
+                    className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary"
+                  />
                   <p className="text-[0.95rem] leading-relaxed">
                     <strong className="font-semibold">{title}.</strong>{" "}
                     <span className="text-muted-foreground">{text}</span>

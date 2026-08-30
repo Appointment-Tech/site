@@ -93,7 +93,10 @@ function Profissionais() {
                 ["Regra de falta", "Política de cancelamento e sinal para segurar o horário."],
               ].map(([title, text]) => (
                 <li key={title} className="flex gap-4">
-                  <span aria-hidden="true" className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span
+                    aria-hidden="true"
+                    className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary"
+                  />
                   <p className="text-[0.95rem] leading-relaxed">
                     <strong className="font-semibold">{title}.</strong>{" "}
                     <span className="text-muted-foreground">{text}</span>
@@ -115,10 +118,30 @@ function Profissionais() {
         <BeatLabel>O que fica resolvido</BeatLabel>
         <SectionHeading title="O combinado acontece sem você." />
         <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <ResolvedCard step="1" tone="primary" title="Confirmação" text="Marcou, está confirmado para os dois. Nada pendente." />
-          <ResolvedCard step="2" tone="warning" title="Lembrete" text="Aviso antes da hora. É aqui que a falta cai." />
-          <ResolvedCard step="3" tone="info" title="Pagamento" text="Recebimento por cartão ou PIX, ligado ao atendimento." />
-          <ResolvedCard step="4" tone="success" title="Histórico" text="Quem veio, quem faltou, quanto entrou. Sem planilha." />
+          <ResolvedCard
+            step="1"
+            tone="primary"
+            title="Confirmação"
+            text="Marcou, está confirmado para os dois. Nada pendente."
+          />
+          <ResolvedCard
+            step="2"
+            tone="warning"
+            title="Lembrete"
+            text="Aviso antes da hora. É aqui que a falta cai."
+          />
+          <ResolvedCard
+            step="3"
+            tone="info"
+            title="Pagamento"
+            text="Recebimento por cartão ou PIX, ligado ao atendimento."
+          />
+          <ResolvedCard
+            step="4"
+            tone="success"
+            title="Histórico"
+            text="Quem veio, quem faltou, quanto entrou. Sem planilha."
+          />
         </ul>
 
         <div className="mt-14 grid items-center gap-12 lg:grid-cols-[1fr_auto]">

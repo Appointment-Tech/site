@@ -87,13 +87,19 @@ function Publico() {
             />
             <ul className="mt-8 space-y-4">
               {[
-                ["Busque por profissão ou nome", "Fisioterapia, odontologia, personal — ou a pessoa direto."],
+                [
+                  "Busque por profissão ou nome",
+                  "Fisioterapia, odontologia, personal — ou a pessoa direto.",
+                ],
                 ["Veja a próxima data livre", "Os horários do dia aparecem no próprio card."],
                 ["Dois toques e pronto", "Confirmação na hora, para você e para quem atende."],
                 ["Lembrete antes da hora", "Você não precisa lembrar sozinho."],
               ].map(([title, text]) => (
                 <li key={title} className="flex gap-4">
-                  <span aria-hidden="true" className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span
+                    aria-hidden="true"
+                    className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary"
+                  />
                   <p className="text-[0.95rem] leading-relaxed">
                     <strong className="font-semibold">{title}.</strong>{" "}
                     <span className="text-muted-foreground">{text}</span>
@@ -118,10 +124,30 @@ function Publico() {
           lead="O pagamento e o comprovante ficam junto do atendimento — não em três aplicativos diferentes."
         />
         <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <ResolvedCard step="1" tone="primary" title="Confirmação" text="Sai na hora, sem esperar alguém responder." />
-          <ResolvedCard step="2" tone="warning" title="Lembrete" text="Aviso antes do compromisso, automático." />
-          <ResolvedCard step="3" tone="info" title="Pagamento" text="Cartão ou PIX processados pela ASAAS, dentro do app." />
-          <ResolvedCard step="4" tone="success" title="Comprovante" text="Recibo e histórico guardados junto do atendimento." />
+          <ResolvedCard
+            step="1"
+            tone="primary"
+            title="Confirmação"
+            text="Sai na hora, sem esperar alguém responder."
+          />
+          <ResolvedCard
+            step="2"
+            tone="warning"
+            title="Lembrete"
+            text="Aviso antes do compromisso, automático."
+          />
+          <ResolvedCard
+            step="3"
+            tone="info"
+            title="Pagamento"
+            text="Cartão ou PIX processados pela ASAAS, dentro do app."
+          />
+          <ResolvedCard
+            step="4"
+            tone="success"
+            title="Comprovante"
+            text="Recibo e histórico guardados junto do atendimento."
+          />
         </ul>
 
         <Card className="mt-10 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -145,8 +171,8 @@ function Publico() {
           <div>
             <h2 className="text-3xl sm:text-4xl">Você vê o preço antes de escolher o horário.</h2>
             <p className="mt-4 measure text-lg leading-relaxed text-muted-foreground">
-              Cada serviço leva seu valor e sua duração. Nada de perguntar quanto custa por
-              mensagem e esperar a resposta para decidir.
+              Cada serviço leva seu valor e sua duração. Nada de perguntar quanto custa por mensagem
+              e esperar a resposta para decidir.
             </p>
           </div>
           <PhoneFrame

@@ -19,7 +19,8 @@ export const Route = createFileRoute("/empresas")({
       { property: "og:title", content: "Para empresas e equipes — Appointment" },
       {
         property: "og:description",
-        content: "Uma operação, várias agendas. Confirmação, lembrete e recebimento no mesmo fluxo.",
+        content:
+          "Uma operação, várias agendas. Confirmação, lembrete e recebimento no mesmo fluxo.",
       },
     ],
   }),
@@ -103,7 +104,10 @@ function Empresas() {
                 ["Indicadores", "Ocupação, faltas e receita por agenda, sem exportar nada."],
               ].map(([title, text]) => (
                 <li key={title} className="flex gap-4">
-                  <span aria-hidden="true" className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span
+                    aria-hidden="true"
+                    className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary"
+                  />
                   <p className="text-[0.95rem] leading-relaxed">
                     <strong className="font-semibold">{title}.</strong>{" "}
                     <span className="text-muted-foreground">{text}</span>
@@ -125,10 +129,30 @@ function Empresas() {
         <BeatLabel>O que fica resolvido</BeatLabel>
         <SectionHeading title="Menos telefone, mais atendimento." />
         <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <ResolvedCard step="1" tone="primary" title="Confirmação" text="Automática para cliente e profissional, em toda agenda." />
-          <ResolvedCard step="2" tone="warning" title="Lembrete" text="Regra única para a casa inteira, sem depender da recepção." />
-          <ResolvedCard step="3" tone="info" title="Pagamento" text="Cartão e PIX, com registro por profissional e por unidade." />
-          <ResolvedCard step="4" tone="success" title="Relatórios" text="Ocupação, faltas e receita para decidir a próxima escala." />
+          <ResolvedCard
+            step="1"
+            tone="primary"
+            title="Confirmação"
+            text="Automática para cliente e profissional, em toda agenda."
+          />
+          <ResolvedCard
+            step="2"
+            tone="warning"
+            title="Lembrete"
+            text="Regra única para a casa inteira, sem depender da recepção."
+          />
+          <ResolvedCard
+            step="3"
+            tone="info"
+            title="Pagamento"
+            text="Cartão e PIX, com registro por profissional e por unidade."
+          />
+          <ResolvedCard
+            step="4"
+            tone="success"
+            title="Relatórios"
+            text="Ocupação, faltas e receita para decidir a próxima escala."
+          />
         </ul>
 
         <Card className="mt-10 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
