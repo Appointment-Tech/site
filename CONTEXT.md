@@ -45,3 +45,54 @@ O repo hospeda **duas versões** do site, decisão do Leandro em 10/08 (ele gost
 
 - **v1** (raiz do domínio, `/`) — o design "oficial", com o fluxo de Convite/Consulta de Preço descrito acima. Fonte completa em `src/` (TanStack Start), buildada e servida por Node.
 - **v2** (`v2.marcaumappointment.com`) — um design alternativo mais editorial, do projeto Lovable "See My Project!". **Não tem as mesmas regras de negócio do v1** (não tem os formulários de Convite/Consulta de Preço — tem CTA "Baixar o app" com estado "em breve" e um form de contato de investidor via mailto). É um espelho estático pré-buildado, não código-fonte — ver `site-v2/README.md`.
+
+## v3 — o site dinâmico (em desenho, 29/08/2026)
+
+Terceira versão do site, decidida em 29/08 numa entrevista de refinamento. Coexiste com as
+outras duas em `v3.marcaumappointment.com` — **não substitui a v1 na raiz**. A decisão de
+qual versão fica sendo a oficial é posterior e não faz parte deste trabalho.
+
+### Glossário
+
+- **Corrente** — cada um dos dois fluxos de partículas que atravessam a cena 3D em direções
+  opostas: a corrente de **quem atende** (profissional autônomo ou empresa) e a de **quem
+  marca** (cliente final). São a tradução visual dos dois lados que o Appointment junta.
+  _Evitar_: "lado", "grupo", "público" para se referir ao objeto na cena — `public` continua
+  significando o segmento de audiência das páginas (`/profissionais`, `/empresas`, `/publico`).
+- **Colisão** (`collision`) — o ponto central da cena onde as duas correntes se encontram e se
+  cristalizam no atendimento confirmado. É o momento de clímax da narrativa de scroll, e o que
+  materializa ali é **uma tela real do app**, não uma ilustração.
+  _Evitar_: "encontro", "match", "junção".
+- **Cena** (`scene`) — a composição three.js persistente que vive por trás de todas as páginas
+  da v3. Persistente é o ponto: ela **não é remontada** a cada navegação; a troca de rota move
+  a câmera e reconfigura as correntes.
+  _Evitar_: "canvas", "animação", "background".
+- **Momento** (`beat`) — cada estado nomeado da cena ao qual um trecho da página está ancorado
+  (correntes distantes → aproximação → colisão → confirmação → dispersão). O texto é escrito
+  para os momentos, não o contrário.
+  _Evitar_: "seção", "step", "frame".
+- **Tela de vitrine** (`showcase screen`) — captura de uma tela **real** do app Flutter
+  (`Appointment-Tech/app-r2d2`), gerada com dados fictícios e usada como textura na cena e nas
+  páginas. Nunca é mockup desenhado, e nunca contém dado de cliente real.
+  _Evitar_: "mockup", "print", "screenshot de marketing".
+- **Modo de captura** (`screenshot mode`) — modo de execução do app que injeta dados fictícios
+  determinísticos sem tocar em rede, existindo só para gerar as telas de vitrine.
+  _Evitar_: "modo demo", "mock", "flavor de teste".
+
+### Decisões de escopo firmadas
+
+- **Coexiste, não substitui.** v3 sobe em `v3.marcaumappointment.com`, ao lado de v1 (raiz) e
+  v2. Custo aceito: um terceiro container no droplet de 1 vCPU / 2 GB.
+- **Fonte no repo, não espelho.** O Lovable gera a base visual e ela entra em `src/` como
+  código-fonte via GitHub sync. A camada three.js, o scroll e as transições são escritos aqui.
+  Isso existe explicitamente para **não repetir o v2**, que virou espelho estático e por isso
+  não pode ser evoluído (ver `site-v2/README.md`).
+- **Cobre as 6 páginas** — home, `sobre`, `profissionais`, `empresas`, `publico`, `investidores`.
+- **Metáfora: os dois lados se encontram.** Descartadas a grade de horários que se preenche, o
+  dia que passa com o scroll e a órbita de horas — ver ADR 0002.
+- **Copy reescrito** para caber nos momentos da animação. A mensagem e os argumentos da v1
+  continuam valendo; o que muda é o recorte e o ritmo das frases.
+- **CTA primário continua Convite.** O app ainda não está nas lojas, então não há botão de
+  loja. A Consulta de Preço segue sendo o caminho das empresas.
+- **A vitrine é o app de verdade.** As telas vêm de captura do Flutter rodando em emulador,
+  com dados fictícios — ver ADR 0003.
