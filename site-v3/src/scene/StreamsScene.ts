@@ -44,6 +44,8 @@ export class StreamsScene {
     uEnergy: { value: number };
     uOpacity: { value: number };
     uAspect: { value: number };
+    /** Meia-largura e meia-altura do bloco, em NDC. */
+    uBloco: { value: THREE.Vector2 };
     uRows: { value: number };
     uNeutral: { value: THREE.Color };
     uPrimary: { value: THREE.Color };
@@ -92,8 +94,19 @@ export class StreamsScene {
     this.camera.position.z = 1;
 
     const styles = getComputedStyle(document.documentElement);
+    /**
+     * Lê um token do CSS como cor.
+     *
+     * `setStyle` com LinearSRGBColorSpace evita a conversão sRGB->linear que o
+     * three faz por padrão: como o material não passa por tone mapping nem
+     * reconversão na saída, aquela conversão lavava as cores — o verde de
+     * "Confirmado" chegava à tela como cinza.
+     */
     const token = (name: string, fallback: string) =>
-      new THREE.Color(styles.getPropertyValue(name).trim() || fallback);
+      new THREE.Color().setStyle(
+        styles.getPropertyValue(name).trim() || fallback,
+        THREE.LinearSRGBColorSpace,
+      );
 
     const atlas = buildSlotAtlas(styles.getPropertyValue("--foreground").trim() || "#1c1515");
     this.texture = new THREE.CanvasTexture(atlas.canvas);
@@ -110,6 +123,7 @@ export class StreamsScene {
       uEnergy: { value: this.current.energy },
       uOpacity: { value: this.current.opacity },
       uAspect: { value: 1 },
+      uBloco: { value: new THREE.Vector2(0.1, 0.1) },
       uRows: { value: SLOT_LABELS.length },
       uNeutral: { value: token("--border", "#e6e3e1") },
       uPrimary: { value: token("--primary", "#e8153f") },
@@ -130,11 +144,14 @@ export class StreamsScene {
     // blocos a coluna vira uma torre sobreposta e ilegível — foi o que a
     // primeira versão fez. O número é fixo pela narrativa, não pelo orçamento
     // do aparelho (esse controla o pixelRatio, que é o que de fato pesa).
-    const pairs = 7;
+    const pairs = 6;
     const count = pairs * 2;
 
     // Proporção de um bloco de agenda: largo e baixo, como o card de horário.
-    const geometry = new THREE.PlaneGeometry(0.46, 0.125);
+    // Geometria unitária: a dimensão real vem de uBloco, em NDC calculado a
+    // partir de pixels. Fixar o tamanho aqui deixava o bloco refém da
+    // proporção do palco — numa faixa larga e baixa ele virava um risco.
+    const geometry = new THREE.PlaneGeometry(1, 1);
 
     const seeds = new Float32Array(count * 4);
     for (let i = 0; i < count; i += 1) {
@@ -165,6 +182,7 @@ export class StreamsScene {
         uniform float uFan;
         uniform float uEnergy;
         uniform float uAspect;
+        uniform vec2 uBloco;
         uniform float uRows;
 
         varying vec2 vUv;
@@ -178,34 +196,32 @@ export class StreamsScene {
           float phase = aSeed.z;
           vRow = aSeed.w;
 
-          // --- posição solta: o bloco deriva no seu próprio ritmo, longe do
-          // centro, onde vive o texto ---
-          float drift = fract(lane + uTime * (0.02 + uEnergy * 0.03));
-          float looseY = (drift * 2.0 - 1.0) * 0.8
-                       + sin(uTime * 0.7 + phase) * 0.04 * uEnergy;
-          // O palco é a área ao redor da moldura: solto, o bloco fica na borda
-          // dele; encaixado, encosta na lateral do aparelho. Entrar mais que
-          // isso o esconde atrás do celular, que é opaco.
-          float looseX = side * (0.95 + sin(phase) * 0.08);
+          // --- solto: o bloco ATRAVESSA a faixa, entrando por uma borda e
+          // saindo pela outra. "uAspect" é o alcance horizontal do palco em
+          // unidades locais, então isto vale para qualquer largura de faixa.
+          float travessia = fract(lane * 0.37 + phase * 0.15 + uTime * (0.05 + uEnergy * 0.07));
+          float looseX = side * (1.2 - travessia * 2.4) * -1.0;
+          float looseY = (lane - 0.5) * 1.5
+                       + sin(uTime * 0.8 + phase) * 0.05 * uEnergy;
 
-          // --- posição em grade: linhas de agenda espaçadas ---
-          // O espaçamento vem do numero de faixas, para as linhas nunca se
-          // sobreporem: com blocos de 0.088 de altura, 9 linhas em 1.5 sobram.
-          float gridY = (lane - 0.5) * 1.55;
+          // --- encaixado: a coluna de pares se forma no centro da faixa ---
+          float gridY = (lane - 0.5) * 1.6;
 
           // No encontro os dois lados encostam a moldura, um de cada lado: o
           // par se forma ladeando o aparelho, e não dentro dele.
-          // O palco é um vão vazio: o encaixe acontece no meio dele, com os
-          // dois blocos do par ENCOSTADOS, não sobrepostos — por isso o
-          // deslocamento é exatamente meia largura de bloco.
-          float gridX = side * 0.24;
+          // Encaixe no centro da faixa: os dois blocos do par ENCOSTADOS, não
+          // sobrepostos — o deslocamento é meia largura de bloco.
+          // Encostados, não sobrepostos: o deslocamento é meia largura.
+          float gridX = side * uBloco.x;
 
           // No leque final a agenda se abre: os blocos voltam para a borda.
-          gridX = mix(gridX, side * 0.6, uFan);
+          gridX = mix(gridX, side * 0.7, uFan);
 
-          float x = mix(looseX, gridX, uGrid) * mix(1.0, uSeparation, uGrid * 0.35)
-                  + side * (1.0 - uSeparation) * 0.35 * (1.0 - uGrid);
-          float y = mix(looseY, gridY, uGrid);
+          float encaixou = step(lane, uConfirmed);
+          float assentado = uGrid * encaixou;
+
+          float x = mix(looseX, gridX, assentado);
+          float y = mix(looseY, gridY, assentado);
 
           // Respiração: um deslocamento pequeno que existe SEMPRE, inclusive
           // com a grade formada. Sem isto a cena congela assim que assenta —
@@ -213,8 +229,8 @@ export class StreamsScene {
           // resultado parecia travado justamente no momento mais importante.
           // A amplitude é menor que o vão entre as linhas, então o alinhamento
           // continua legível.
-          y += sin(uTime * 0.9 + phase) * 0.010 * (0.35 + uEnergy * 0.65);
-          x += cos(uTime * 0.62 + phase * 1.3) * 0.006 * (0.35 + uEnergy * 0.65);
+          y += sin(uTime * 0.9 + phase) * 0.02 * (0.35 + uEnergy * 0.65);
+          x += cos(uTime * 0.62 + phase * 1.3) * 0.012 * (0.35 + uEnergy * 0.65);
 
           // Conforme a grade se forma, o conjunto migra para o foco — a
           // moldura do celular da seção. Solto (uGrid = 0) ele fica nas
@@ -225,19 +241,19 @@ export class StreamsScene {
 
           // Encaixe: mede o quanto as duas colunas já se fecharam.
           vMeeting = 1.0 - clamp(uSeparation * 2.2, 0.0, 1.0);
-          // Confirmar não é tudo de uma vez: os pares fecham em ordem, de cima
-          // para baixo, e isso é o que dá leitura de "acontecendo" ao momento.
-          vConfirmed = step(lane, uConfirmed) * vMeeting;
+          // Confirmar não é tudo de uma vez: os pares fecham em ordem, e os
+          // que não fecharam seguem atravessando a faixa.
+          vConfirmed = encaixou * vMeeting * uGrid;
 
           // O bloco confirmado cresce de leve: o par virou uma coisa só.
           float pulse = 1.0 + vConfirmed * 0.035 * sin(uTime * 1.6 + lane * 6.28);
           float scale = (1.0 + vConfirmed * 0.12) * focusScale * pulse;
 
-          vec3 local = position * scale;
-          local.x /= uAspect;
+          // position é unitário (-0.5..0.5): o bloco assume o tamanho em NDC.
+          vec3 local = vec3(position.xy * uBloco * 2.0 * scale, 0.0);
 
           vUv = uv;
-          gl_Position = projectionMatrix * vec4(local + vec3(x / uAspect, y, 0.0), 1.0);
+          gl_Position = projectionMatrix * vec4(local + vec3(x, y, 0.0), 1.0);
         }
       `,
       fragmentShader: /* glsl */ `
@@ -279,17 +295,17 @@ export class StreamsScene {
           // o branco puro do card fica literalmente invisivel. Por isso o
           // interior recebe um tingimento do proprio estado, e a borda e larga
           // o suficiente para ler como contorno de um slot de agenda.
-          float border = smoothstep(-0.09, -0.03, dist);
-          vec3 fill = mix(uSurface, edge, 0.12 + 0.30 * max(vMeeting, vConfirmed));
+          float border = smoothstep(-0.14, -0.04, dist);
+          vec3 fill = mix(uSurface, edge, 0.16 + 0.62 * max(vMeeting, vConfirmed));
           vec3 color = mix(fill, edge, border);
 
           // O rótulo do horário: uma linha do atlas, escolhida pelo índice.
           vec2 labelUv = vec2(vUv.x, (vRow + vUv.y) / uRows);
           float label = texture2D(uAtlas, labelUv).a;
-          color = mix(color, edge, label * 0.9);
+          color = mix(color, mix(edge, vec3(0.0), 0.35), label * 0.95);
 
           // Bloco livre é discreto; confirmado tem presença.
-          float alpha = uOpacity * mix(0.7, 1.0, max(vMeeting, vConfirmed));
+          float alpha = uOpacity * mix(0.85, 1.0, max(vMeeting, vConfirmed));
           gl_FragColor = vec4(color, alpha);
         }
       `,
@@ -317,6 +333,15 @@ export class StreamsScene {
     const height = this.canvas.clientHeight || window.innerHeight;
     this.renderer.setSize(width, height, false);
     this.uniforms.uAspect.value = Math.max(width / Math.max(height, 1), 0.0001);
+
+    // O bloco tem tamanho em PIXELS, convertido para NDC: é o que mantém o
+    // rótulo legível seja qual for a proporção do palco.
+    const larguraPx = 112;
+    const alturaPx = 34;
+    this.uniforms.uBloco.value.set(
+      larguraPx / Math.max(width, 1),
+      alturaPx / Math.max(height, 1),
+    );
 
     if (this.running && !this.frame) this.frame = requestAnimationFrame(this.tick);
   }

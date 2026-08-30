@@ -43,11 +43,11 @@ export const BEATS: Record<BeatName, BeatConfig> = {
 
   // Se aproximam e começam a se alinhar por faixa de horário — mas ainda
   // desencontrados, que é exatamente a dor descrita nesta seção.
-  aproximacao: { separation: 0.6, grid: 0.5, confirmed: 0, fan: 0, energy: 0.75, opacity: 0.35 },
+  aproximacao: { separation: 0.6, grid: 0.2, confirmed: 0, fan: 0, energy: 0.85, opacity: 0.9 },
 
   // O encontro: as colunas se fecham, os blocos encaixam par a par e a maioria
   // vira atendimento confirmado.
-  colisao: { separation: 0.05, grid: 1, confirmed: 0.85, fan: 0, energy: 1, opacity: 0.95 },
+  colisao: { separation: 0.05, grid: 1, confirmed: 0.8, fan: 0, energy: 1, opacity: 1 },
 
   // Resolvido: a grade se assenta, o movimento se acalma, tudo confirmado.
   confirmacao: { separation: 0.06, grid: 1, confirmed: 1, fan: 0, energy: 0.22, opacity: 0.3 },

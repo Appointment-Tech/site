@@ -57,10 +57,63 @@ export function SceneLayer() {
       const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-beat]"));
       if (sections.length === 0) return;
 
-      /** A moldura visível manda no palco; sem moldura, a cena se esconde. */
-      let palco: HTMLElement | null = null;
+      const palcos = Array.from(document.querySelectorAll<HTMLElement>("[data-scene-stage]"));
+
+      /**
+       * O palco em cena é o mais próximo do centro da viewport.
+       *
+       * Escolher pelo IntersectionObserver não bastava: depois de um scroll
+       * programático ele pode não disparar (os limiares já foram cruzados), e
+       * a cena ficava escondida com a faixa bem à vista.
+       */
+      const palcoVisivel = (): HTMLElement | null => {
+        const meio = window.innerHeight / 2;
+        let melhor: HTMLElement | null = null;
+        let menorDistancia = Number.POSITIVE_INFINITY;
+        for (const candidato of palcos) {
+          const r = candidato.getBoundingClientRect();
+          if (r.width < 40 || r.bottom < 0 || r.top > window.innerHeight) continue;
+          const distancia = Math.abs(r.top + r.height / 2 - meio);
+          if (distancia < menorDistancia) {
+            menorDistancia = distancia;
+            melhor = candidato;
+          }
+        }
+        return melhor;
+      };
+
+      /**
+       * Momento e palco saem da mesma leitura da geometria, a cada quadro de
+       * scroll. Depender do IntersectionObserver para isso deixava a cena no
+       * momento anterior depois de um scroll programático — os limiares já
+       * tinham sido cruzados e o callback não vinha.
+       */
+      const atualizarMomento = () => {
+        const meio = window.innerHeight / 2;
+        let ativa: HTMLElement | null = null;
+        let menor = Number.POSITIVE_INFINITY;
+        for (const secao of sections) {
+          const r = secao.getBoundingClientRect();
+          if (r.bottom < 0 || r.top > window.innerHeight) continue;
+          const distancia = Math.abs(r.top + r.height / 2 - meio);
+          if (distancia < menor) {
+            menor = distancia;
+            ativa = secao;
+          }
+        }
+        if (!ativa) return;
+
+        const beat = ativa.dataset["beat"] ?? DEFAULT_BEAT;
+        const index = sections.indexOf(ativa);
+        const next = sections[index + 1]?.dataset["beat"];
+        const r = ativa.getBoundingClientRect();
+        const travelled = -r.top / Math.max(r.height, 1);
+        instance.setBeat(beat, Math.min(Math.max(travelled, 0), 1), next);
+      };
 
       const posicionar = () => {
+        atualizarMomento();
+        const palco = palcoVisivel();
         if (!palco) {
           canvas.style.opacity = "0";
           return;
@@ -86,36 +139,12 @@ export function SceneLayer() {
         instance.resize();
       };
 
-      const observer = new IntersectionObserver(
-        (entries) => {
-          // O momento vigente é o mais visível — não o primeiro que cruzou o
-          // limiar, senão duas seções vizinhas ficam disputando a cena.
-          let best: IntersectionObserverEntry | null = null;
-          for (const entry of entries) {
-            if (!entry.isIntersecting) continue;
-            if (!best || entry.intersectionRatio > best.intersectionRatio) best = entry;
-          }
-          if (!best) return;
-
-          const element = best.target as HTMLElement;
-          const beat = element.dataset["beat"] ?? DEFAULT_BEAT;
-          const index = sections.indexOf(element);
-          const next = sections[index + 1]?.dataset["beat"];
-
-          const rect = element.getBoundingClientRect();
-          const travelled = -rect.top / Math.max(rect.height, 1);
-          instance.setBeat(beat, Math.min(Math.max(travelled, 0), 1), next);
-
-          // O palco é um vão declarado no layout (`data-scene-stage`), não um
-          // elemento de conteúdo. Ancorar a cena na moldura do celular custou
-          // três tentativas: ou ela sumia atrás do aparelho, ou caía sobre o
-          // texto, e cada ajuste de pixel quebrava a outra ponta.
-          palco = element.querySelector<HTMLElement>("[data-scene-stage]");
-          posicionar();
-        },
-        { threshold: [0.1, 0.25, 0.5, 0.75, 1] },
-      );
-
+      // O observer serve só para acordar o reposicionamento quando uma seção
+      // entra ou sai de vista; quem decide momento e palco é a leitura da
+      // geometria, que não depende de limiar nenhum.
+      const observer = new IntersectionObserver(() => posicionar(), {
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+      });
       sections.forEach((section) => observer.observe(section));
       cleanups.push(() => observer.disconnect());
 
@@ -129,6 +158,7 @@ export function SceneLayer() {
           posicionar();
         });
       };
+      posicionar();
       window.addEventListener("scroll", aoRolar, { passive: true });
       window.addEventListener("resize", aoRolar, { passive: true });
       cleanups.push(() => {
