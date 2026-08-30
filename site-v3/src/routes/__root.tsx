@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { Toaster } from "@/components/ui/sonner";
+import { SceneLayer } from "@/components/site/SceneLayer";
 
 function NotFoundComponent() {
   return (
@@ -131,6 +132,9 @@ function RootComponent() {
       >
         Pular para o conteúdo
       </a>
+      {/* A cena vive aqui, acima do <Outlet>, para não ser remontada a cada
+          navegação — trocar de rota só reconfigura as correntes (ADR 0002). */}
+      <SceneLayer />
       <SiteHeader />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <main id="conteudo">
