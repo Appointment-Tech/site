@@ -39,7 +39,15 @@ const ESTADOS = [
  * todos — a abertura é o gesto, o relógio funcionando é o que se observa.
  */
 const PESOS = [10, 20, 40, 15, 15] as const;
-const CURSO_VH = [23, 45, 90, 34, 33] as const;
+/** Rolagem por fase. No celular o curso encurta ~22%: mesma narrativa, menos
+ *  scroll — cena presa comprida demais em tela pequena lê como página travada. */
+const CURSO = [
+  "h-[18vh] lg:h-[23vh]",
+  "h-[35vh] lg:h-[45vh]",
+  "h-[70vh] lg:h-[90vh]",
+  "h-[27vh] lg:h-[34vh]",
+  "h-[26vh] lg:h-[33vh]",
+] as const;
 
 export function HeroTimeScene() {
   const secao = useRef<HTMLElement>(null);
@@ -87,7 +95,7 @@ export function HeroTimeScene() {
         card,
         {
           y: -120 * depth,
-          x: (i % 2 === 0 ? -70 : 70) * depth,
+          x: window.innerWidth < 1024 ? 0 : (i % 2 === 0 ? -70 : 70) * depth,
           scale: 0.84,
           opacity: 0,
           ease: "power1.out",
@@ -102,11 +110,11 @@ export function HeroTimeScene() {
 
     // Saída: só nos últimos 15%. O título perde força e o relógio se afasta —
     // até aqui ele permaneceu inteiro dentro da viewport.
-    tl.to(
-      "[data-hero-texto]",
-      { opacity: 0.2, y: -28, ease: "power1.in", duration: 0.12 },
+    tl.to("[data-hero-fade]", { opacity: 0.2, y: -28, ease: "power1.in", duration: 0.12 }, 0.88).to(
+      "[data-hero-relogio]",
+      { scale: 1.14, opacity: 0.45, ease: "none", duration: 0.12 },
       0.88,
-    ).to("[data-hero-relogio]", { scale: 1.14, opacity: 0.45, ease: "none", duration: 0.12 }, 0.88);
+    );
 
     return tl;
   }, []);
@@ -138,7 +146,7 @@ export function HeroTimeScene() {
         <div
           data-hero-palco
           className={cn(
-            "relative flex items-center overflow-hidden bg-surface",
+            "relative flex items-start pt-[6svh] lg:items-center lg:pt-0 overflow-hidden bg-surface",
             estatico
               ? "min-h-[92svh]"
               : "sticky top-[var(--header-height)] h-[calc(100dvh-var(--header-height))]",
@@ -150,8 +158,8 @@ export function HeroTimeScene() {
             data-hero-relogio
             aria-hidden="true"
             className="pointer-events-none absolute -z-10
-                       left-1/2 top-1/2 h-[104vmin] w-[104vmin] -translate-x-1/2 -translate-y-1/2
-                       lg:left-auto lg:right-[-14vw] lg:h-[92vmin] lg:w-[92vmin] lg:translate-x-0"
+                       right-[-34vw] top-[62%] h-[124vmin] w-[124vmin] -translate-y-1/2
+                       lg:right-[-14vw] lg:top-1/2 lg:h-[92vmin] lg:w-[92vmin]"
           >
             <ScrollClock />
           </div>
@@ -200,19 +208,26 @@ export function HeroTimeScene() {
             className="mx-auto w-full max-w-[76rem] px-5 sm:px-8 2xl:max-w-[90rem]"
           >
             <div className="max-w-xl rounded-[var(--radius-2xl)] bg-surface/70 p-6 backdrop-blur-[2px] sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
-              <p className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              <p
+                data-hero-fade
+                className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground"
+              >
                 <span aria-hidden="true" className="inline-block h-px w-8 bg-primary" />O tempo se
                 abre para você
               </p>
 
               <h1
+                data-hero-fade
                 id="hero-titulo"
                 className="mt-6 text-5xl leading-[1.02] text-foreground sm:text-7xl"
               >
                 Seu tempo vale mais.
               </h1>
 
-              <p className="mt-6 measure text-lg leading-relaxed text-muted-foreground">
+              <p
+                data-hero-fade
+                className="mt-6 measure text-lg leading-relaxed text-muted-foreground"
+              >
                 Organize compromissos, conecte pessoas e dedique seu tempo ao que realmente importa.
               </p>
 
@@ -229,7 +244,7 @@ export function HeroTimeScene() {
                 </Button>
               </div>
 
-              <p className="mt-5 max-w-md text-sm text-muted-foreground">
+              <p data-hero-fade className="mt-5 max-w-md text-sm text-muted-foreground">
                 O acesso é liberado por convite, em levas, enquanto o aplicativo não chega às lojas.
               </p>
             </div>
@@ -254,9 +269,7 @@ export function HeroTimeScene() {
             para dirigir a animação. */}
         {estatico
           ? null
-          : ESTADOS.map((e, i) => (
-              <div key={e.id} aria-hidden="true" style={{ height: `${CURSO_VH[i]}vh` }} />
-            ))}
+          : ESTADOS.map((e, i) => <div key={e.id} aria-hidden="true" className={CURSO[i]} />)}
       </div>
     </section>
   );

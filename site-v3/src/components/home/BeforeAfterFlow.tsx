@@ -74,7 +74,15 @@ export function BeforeAfterFlow() {
     gsap.utils.toArray<HTMLElement>("[data-conversao]").forEach((linha) => {
       gsap
         .timeline({
-          scrollTrigger: { trigger: linha, start: "top 82%", end: "top 45%", scrub: 0.5 },
+          scrollTrigger: {
+            trigger: linha,
+            // No celular a conversão começa mais tarde: a seção abre, o
+            // visitante lê o título com os ruídos intactos, e só então a
+            // passagem pelos cartões começa.
+            start: window.innerWidth < 1024 ? "top 70%" : "top 82%",
+            end: window.innerWidth < 1024 ? "top 38%" : "top 45%",
+            scrub: 0.5,
+          },
         })
         // O ruído recua e perde força; o componente do app entra no lugar.
         .to(linha.querySelector("[data-ruido]"), { xPercent: 10, opacity: 0.94, ease: "none" }, 0)

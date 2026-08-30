@@ -26,12 +26,12 @@ export function SiteFooter() {
             <h2 className="text-sm font-semibold">Quem atende</h2>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link to="/profissionais" className="hover:text-foreground">
+                <Link to="/profissionais" className="inline-block py-1 hover:text-foreground">
                   Profissionais autônomos
                 </Link>
               </li>
               <li>
-                <Link to="/empresas" className="hover:text-foreground">
+                <Link to="/empresas" className="inline-block py-1 hover:text-foreground">
                   Empresas e equipes
                 </Link>
               </li>
@@ -42,12 +42,16 @@ export function SiteFooter() {
             <h2 className="text-sm font-semibold">Quem marca</h2>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link to="/publico" className="hover:text-foreground">
+                <Link to="/publico" className="inline-block py-1 hover:text-foreground">
                   Marcar um horário
                 </Link>
               </li>
               <li>
-                <Link to="/publico" hash="pagamento" className="hover:text-foreground">
+                <Link
+                  to="/publico"
+                  hash="pagamento"
+                  className="inline-block py-1 hover:text-foreground"
+                >
                   Pagamento e comprovante
                 </Link>
               </li>
@@ -58,12 +62,12 @@ export function SiteFooter() {
             <h2 className="text-sm font-semibold">Appointment</h2>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link to="/sobre" className="hover:text-foreground">
+                <Link to="/sobre" className="inline-block py-1 hover:text-foreground">
                   Sobre
                 </Link>
               </li>
               <li>
-                <Link to="/investidores" className="hover:text-foreground">
+                <Link to="/investidores" className="inline-block py-1 hover:text-foreground">
                   Investidores
                 </Link>
               </li>
@@ -74,12 +78,15 @@ export function SiteFooter() {
                 (ver CONTEXT.md), então mudar a URL quebraria o app nas lojas.
               */}
               <li>
-                <a href="/politica-de-privacidade.html" className="hover:text-foreground">
+                <a
+                  href="/politica-de-privacidade.html"
+                  className="inline-block py-1 hover:text-foreground"
+                >
                   Política de Privacidade
                 </a>
               </li>
               <li>
-                <a href="/termos-legais.html" className="hover:text-foreground">
+                <a href="/termos-legais.html" className="inline-block py-1 hover:text-foreground">
                   Termos de Uso
                 </a>
               </li>

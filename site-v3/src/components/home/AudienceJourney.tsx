@@ -73,6 +73,90 @@ const PERSPECTIVAS = [
 /** "Empresa" mostra quatro agendas de uma vez — precisa de mais permanência. */
 const PESOS = [1, 1.35, 1.2] as const;
 
+/**
+ * A agenda em telas estreitas: os mesmos compromissos, em mini-cartões.
+ *
+ * Medido em 390x844, o card da cena com a agenda detalhada tinha 949 a 1251px
+ * de altura — até 470px além da viewport útil. Encolher tipografia não
+ * bastava: a visão de equipe são quatro cartões completos empilhados. Aqui
+ * cada compromisso vira hora + iniciais + serviço + selo de cor, em duas
+ * colunas, e a narrativa (uma agenda, quatro agendas, agendas de outros
+ * profissionais) permanece inteira.
+ */
+const MINI: Record<
+  number,
+  {
+    legenda: string;
+    itens: readonly {
+      h: string;
+      i: string;
+      t: string;
+      s: "confirmado" | "reservado" | "pendente";
+    }[];
+  }
+> = {
+  0: {
+    legenda: "Agenda de Helena · domingo, 30",
+    itens: [
+      { h: "09:00", i: "MA", t: "Consulta", s: "confirmado" },
+      { h: "10:30", i: "RT", t: "Sessão", s: "reservado" },
+    ],
+  },
+  1: {
+    legenda: "Equipe · domingo, 30",
+    itens: [
+      { h: "09:00", i: "HV", t: "Consulta", s: "confirmado" },
+      { h: "09:30", i: "OB", t: "Avaliação", s: "confirmado" },
+      { h: "11:00", i: "JR", t: "Retorno", s: "reservado" },
+      { h: "14:00", i: "TN", t: "Sessão", s: "pendente" },
+    ],
+  },
+  2: {
+    legenda: "Meus compromissos · esta semana",
+    itens: [
+      { h: "09:00", i: "HV", t: "Fisioterapia", s: "confirmado" },
+      { h: "15:30", i: "OB", t: "Salão", s: "confirmado" },
+      { h: "19:00", i: "TN", t: "Treino", s: "reservado" },
+    ],
+  },
+};
+
+const COR_STATUS = {
+  confirmado: "bg-success-soft text-success",
+  reservado: "bg-info-soft text-info",
+  pendente: "bg-warning-soft text-warning",
+} as const;
+
+function MiniAgenda({ indice }: { indice: number }) {
+  const grupo = MINI[indice]!;
+  return (
+    <div className="space-y-2">
+      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        {grupo.legenda}
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        {grupo.itens.map((item) => (
+          <div
+            key={item.h + item.i}
+            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-border bg-card p-2"
+          >
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-marca-soft text-[0.6rem] font-bold text-marca">
+              {item.i}
+            </span>
+            <span className="min-w-0 flex-1 leading-tight">
+              <span className="block text-[0.72rem] font-semibold tabular-nums text-foreground">
+                {item.h}
+              </span>
+              <span className="block truncate text-[0.62rem] text-muted-foreground">{item.t}</span>
+            </span>
+            <span className={"size-2 shrink-0 rounded-full " + COR_STATUS[item.s].split(" ")[0]} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** A agenda muda de forma conforme a perspectiva — é sempre a mesma agenda. */
 function AgendaDaPerspectiva({ indice }: { indice: number }) {
   if (indice === 0) {
@@ -255,12 +339,12 @@ export function AudienceJourney() {
               presa eles rolavam embora assim que ela prendia — o visitante
               ficava com três abas e uma agenda sem saber de que capítulo se
               tratava — e ainda deixavam um vão de meia tela no topo. */}
-          <div className="sticky top-0 z-10 flex min-h-[92svh] flex-col justify-center py-8">
+          <div className="sticky top-[var(--header-height)] z-10 flex min-h-[calc(100svh-var(--header-height))] flex-col justify-center py-4 lg:top-0 lg:min-h-[92svh] lg:py-8">
             <RotuloCapitulo>Três ângulos do mesmo problema: tempo</RotuloCapitulo>
             <h2 id="publicos-titulo" className="mb-8 mt-4 max-w-3xl text-3xl sm:text-4xl">
               Um produto, três perspectivas.
             </h2>
-            <div className="grid w-full gap-10 rounded-[var(--radius-2xl)] border border-marca/20 border-l-[5px] border-l-marca bg-marca-muted/90 p-6 shadow-[var(--shadow-card)] backdrop-blur-[2px] lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-14 lg:p-10">
+            <div className="grid w-full gap-5 rounded-[var(--radius-2xl)] border border-marca/20 border-l-[5px] border-l-marca bg-marca-muted/90 p-4 shadow-[var(--shadow-card)] backdrop-blur-[2px] sm:gap-10 sm:p-6 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-14 lg:p-10">
               <div>
                 <ol className="flex flex-wrap gap-2" aria-hidden="true">
                   {PERSPECTIVAS.map((p, indice) => (
@@ -288,14 +372,17 @@ export function AudienceJourney() {
                 <h3
                   data-copy={atual.id}
                   data-copy-ativo
-                  className="mt-2 text-2xl leading-snug sm:text-3xl"
+                  className="mt-2 text-xl leading-snug sm:text-3xl"
                 >
                   {atual.titulo}
                 </h3>
 
-                <ul className="mt-6 space-y-2.5">
+                <ul className="mt-4 space-y-1.5 sm:mt-6 sm:space-y-2.5">
                   {atual.itens.map((item) => (
-                    <li key={item} className="flex gap-3 text-[0.93rem] leading-relaxed">
+                    <li
+                      key={item}
+                      className="flex gap-3 text-[0.85rem] leading-relaxed sm:text-[0.93rem]"
+                    >
                       <span
                         aria-hidden="true"
                         className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-marca"
@@ -318,7 +405,12 @@ export function AudienceJourney() {
               </div>
 
               <div data-visual={atual.id} data-visual-ativo>
-                <AgendaDaPerspectiva indice={ativo} />
+                <div className="hidden sm:block">
+                  <AgendaDaPerspectiva indice={ativo} />
+                </div>
+                <div className="sm:hidden">
+                  <MiniAgenda indice={ativo} />
+                </div>
               </div>
             </div>
           </div>

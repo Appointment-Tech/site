@@ -25,7 +25,9 @@ export function FinalCTA() {
         scrollTrigger: {
           trigger: secao.current,
           start: "top 85%",
-          end: "center center",
+          // No celular a apresentação completa mais cedo: com "center center"
+          // o título só ficava inteiro quando já passava por baixo do header.
+          end: window.innerWidth < 1024 ? "top 32%" : "center center",
           scrub: 0.7,
         },
       })
@@ -58,8 +60,8 @@ export function FinalCTA() {
   });
 
   return (
-    <Capitulo tom="marca" className="overflow-hidden">
-      <section ref={secao} aria-labelledby="final-titulo" className="relative py-6 sm:py-10">
+    <Capitulo tom="marca" className="overflow-hidden pb-12 sm:pb-28">
+      <section ref={secao} aria-labelledby="final-titulo" className="relative pb-6 pt-10 sm:py-10">
         {/* O relógio do hero, agora em repouso, com o halo por trás. */}
         <div
           aria-hidden="true"
@@ -73,7 +75,7 @@ export function FinalCTA() {
                 "radial-gradient(circle, color-mix(in srgb, var(--color-primary-soft) 85%, transparent) 0%, transparent 64%)",
             }}
           />
-          <div className="absolute inset-[14%] opacity-70">
+          <div className="absolute inset-[14%] opacity-40 lg:opacity-70">
             <ScrollClock />
           </div>
         </div>

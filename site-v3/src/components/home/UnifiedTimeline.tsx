@@ -1,3 +1,4 @@
+import type React from "react";
 import { useRef } from "react";
 import { Check, ArrowRight } from "lucide-react";
 
@@ -79,6 +80,21 @@ function posicao(angulo: number) {
   return { esquerda: 50 + 41 * Math.cos(rad), topo: 50 + 41 * Math.sin(rad) };
 }
 
+/**
+ * Posição do slot no celular: elipse mais estreita (rx 33) e, nos extremos
+ * leste/oeste, a âncora do cartão desloca para dentro em vez de centrar —
+ * centrado, metade do cartão saía da viewport de 390px.
+ */
+function posicaoMovel(angulo: number) {
+  const rad = ((angulo - 90) * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  // Oeste quase todo para fora (sem cortar a borda), leste quase todo para
+  // dentro do próprio ponto: medido, é o que deixa os cartões do equador fora
+  // do disco central E dentro da viewport de 360–390px.
+  const tx = cos < -0.35 ? "-72%" : cos > 0.35 ? "-6%" : "-50%";
+  return { esquerda: 50 + 33 * cos, topo: 50 + 41 * Math.sin(rad), tx };
+}
+
 export function UnifiedTimeline() {
   const secao = useRef<HTMLElement>(null);
   const estatico = useReducedMotion();
@@ -126,7 +142,9 @@ export function UnifiedTimeline() {
         <div data-curso-agenda className="relative">
           <div
             className={cn(
-              estatico ? "" : "sticky top-0 z-10 flex min-h-[92svh] flex-col justify-center py-8",
+              estatico
+                ? ""
+                : "sticky top-[var(--header-height)] z-10 flex min-h-[calc(100svh-var(--header-height))] flex-col justify-center py-5 lg:top-0 lg:min-h-[92svh] lg:py-8",
             )}
           >
             <RotuloCapitulo>Tudo no mesmo lugar</RotuloCapitulo>
@@ -137,11 +155,11 @@ export function UnifiedTimeline() {
               O que hoje está espalhado em várias conversas passa a caber em uma única agenda.
             </p>
 
-            <div className="mt-8 grid w-full gap-10 lg:grid-cols-[auto_1fr] lg:items-center lg:gap-16">
+            <div className="mt-5 grid w-full gap-5 lg:mt-8 lg:grid-cols-[auto_1fr] lg:items-center lg:gap-16">
               <div
                 data-visual={ESTADOS[ativo]!.id}
                 data-visual-ativo
-                className="relative mx-auto aspect-square w-[19rem] sm:w-[23rem] 2xl:w-[26rem]"
+                className="relative mx-auto aspect-square w-[17rem] sm:w-[23rem] 2xl:w-[26rem]"
               >
                 <div
                   aria-hidden="true"
@@ -191,12 +209,17 @@ export function UnifiedTimeline() {
                 </svg>
 
                 {/* Ponteiro: mesma variável CSS, mesmo instante. */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 origin-center"
-                  style={{ transform: "rotate(calc(-150deg + var(--progresso, 0) * 300deg))" }}
-                >
-                  <span className="absolute left-1/2 top-[3%] h-[9%] w-0.5 -translate-x-1/2 rounded-full bg-marca" />
+                {/* O invólucro com clip existe por causa da caixa girada: um
+                    inset-0 rotacionado tem diagonal maior que o mostrador e,
+                    em 360px, empurrava 10px de rolagem horizontal. O clip não
+                    corta nada visível — o ponteiro vive dentro do círculo. */}
+                <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
+                  <div
+                    className="absolute inset-0 origin-center"
+                    style={{ transform: "rotate(calc(-150deg + var(--progresso, 0) * 300deg))" }}
+                  >
+                    <span className="absolute left-1/2 top-[3%] h-[9%] w-0.5 -translate-x-1/2 rounded-full bg-marca" />
+                  </div>
                 </div>
 
                 {/* Miolo: o dia e o estado corrente. */}
@@ -217,18 +240,27 @@ export function UnifiedTimeline() {
 
                 {COMPROMISSOS.map((item, indice) => {
                   const { esquerda, topo } = posicao(item.angulo);
+                  const movel = posicaoMovel(item.angulo);
                   const estado = estadoDe(indice);
                   return (
                     <div
                       key={item.hora}
                       data-slot={estado}
-                      className="absolute z-10"
-                      style={{ left: `${esquerda}%`, top: `${topo}%` }}
+                      className="absolute z-10 left-[var(--sl-m)] top-[var(--st-m)] sm:left-[var(--sl)] sm:top-[var(--st)]"
+                      style={
+                        {
+                          "--sl": `${esquerda}%`,
+                          "--st": `${topo}%`,
+                          "--sl-m": `${movel.esquerda}%`,
+                          "--st-m": `${movel.topo}%`,
+                          "--tx-m": movel.tx,
+                        } as React.CSSProperties
+                      }
                     >
                       <div
                         className={cn(
-                          "flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 whitespace-nowrap",
-                          "rounded-[var(--radius-pill)] border py-1.5 pl-1.5 pr-3 transition-all duration-300",
+                          "slot-radial flex items-center whitespace-nowrap",
+                          "gap-1.5 rounded-[var(--radius-pill)] border py-1 pl-1 pr-2 transition-all duration-300 sm:gap-2 sm:py-1.5 sm:pl-1.5 sm:pr-3",
                           estado === "livre" && "border-border bg-card shadow-[var(--shadow-card)]",
                           estado === "selecionado" &&
                             "scale-105 border-marca bg-marca text-white shadow-[var(--shadow-lift)]",
@@ -241,7 +273,7 @@ export function UnifiedTimeline() {
                       >
                         <span
                           className={cn(
-                            "flex size-6 items-center justify-center rounded-full text-[0.6rem] font-bold transition-colors duration-300",
+                            "flex size-5 items-center justify-center rounded-full text-[0.55rem] font-bold transition-colors duration-300 sm:size-6 sm:text-[0.6rem]",
                             estado === "livre" && "bg-neutral-soft text-muted-foreground",
                             estado === "selecionado" && "bg-white/25 text-white",
                             estado === "confirmado" && "bg-marca-soft text-marca",
@@ -264,16 +296,26 @@ export function UnifiedTimeline() {
                             className={cn(
                               "text-[0.65rem]",
                               estado === "selecionado" ? "text-white/80" : "text-muted-foreground",
+                              // No celular o serviço aparece só onde a narrativa
+                              // o usa; nos livres, a hora basta e o cartão cabe.
+                              estado === "livre" && "hidden sm:block",
                             )}
                           >
-                            {estado === "liberado" ? "livre de novo" : item.servico}
+                            {estado === "liberado" ? (
+                              <>
+                                <span className="sm:hidden">livre</span>
+                                <span className="hidden sm:inline">livre de novo</span>
+                              </>
+                            ) : (
+                              item.servico
+                            )}
                           </span>
                         </span>
                         {/* O ÚNICO verde do capítulo, e ele significa uma coisa só. */}
                         {estado === "confirmado" ? (
                           <span className="ml-0.5 flex items-center gap-1 rounded-[var(--radius-pill)] bg-success-soft px-1.5 py-0.5 text-[0.58rem] font-bold text-success">
                             <Check aria-hidden="true" className="size-2.5" />
-                            Confirmado
+                            <span className="hidden sm:inline">Confirmado</span>
                           </span>
                         ) : null}
                       </div>
@@ -313,7 +355,7 @@ export function UnifiedTimeline() {
                   {ESTADOS[ativo]!.texto}
                 </p>
 
-                <ul className="mt-8 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+                <ul className="mt-8 hidden gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid">
                   {BENEFICIOS.map((beneficio) => (
                     <li key={beneficio} className="flex gap-3 text-[0.92rem] leading-relaxed">
                       <span
@@ -335,6 +377,19 @@ export function UnifiedTimeline() {
             ? null
             : ESTADOS.map((e) => <div key={e.id} aria-hidden="true" className="h-[62vh]" />)}
         </div>
+
+        {/* Os benefícios, fora da cena presa — visíveis só onde saíram dela. */}
+        <ul className="mt-10 grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:hidden">
+          {BENEFICIOS.map((beneficio) => (
+            <li key={beneficio} className="flex gap-3 text-[0.92rem] leading-relaxed">
+              <span
+                aria-hidden="true"
+                className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-marca"
+              />
+              <span className="text-muted-foreground">{beneficio}</span>
+            </li>
+          ))}
+        </ul>
       </section>
     </Capitulo>
   );

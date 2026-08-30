@@ -216,3 +216,22 @@
 @utility measure {
   max-width: 62ch;
 }
+
+/*
+ * Âncora do cartão radial da agenda.
+ *
+ * No celular cada cartão desloca por --tx-m (definida por slot no JSX):
+ * oeste quase todo para fora, leste quase todo para dentro — centrado, os
+ * extremos saíam da viewport de 360–390px ou invadiam o disco central.
+ * Regra própria, e não utilitário translate do Tailwind: o v4 registra
+ * --tw-translate-* com @property tipado e o var() externo caía no valor
+ * inicial — o deslocamento simplesmente não aplicava.
+ */
+.slot-radial {
+  transform: translate(var(--tx-m, -50%), -50%);
+}
+@media (min-width: 640px) {
+  .slot-radial {
+    transform: translate(-50%, -50%);
+  }
+}

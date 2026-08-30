@@ -145,8 +145,9 @@ function TelaConferencia() {
         Cancelamento e reagendamento sem multa, conforme a regra da profissional.
       </p>
 
-      <div className="mt-auto rounded-[var(--radius-pill)] bg-marca py-2 text-center text-[0.72rem] font-semibold text-white">
-        Confirmar Appointment
+      <div className="mt-auto rounded-[var(--radius-pill)] bg-marca py-1.5 text-center text-[0.62rem] font-semibold text-white sm:py-2 sm:text-[0.72rem]">
+        <span className="sm:hidden">Confirmar</span>
+        <span className="hidden sm:inline">Confirmar Appointment</span>
       </div>
     </div>
   );
@@ -200,7 +201,7 @@ function PalcoTelas({ ativo }: { ativo: number }) {
           height={2400}
           decoding="sync"
           className={cn(
-            "absolute inset-0 h-full w-full object-contain transition-opacity duration-300",
+            "absolute inset-0 h-full w-full object-contain transition-opacity duration-150",
             ativo === indice ? "opacity-100" : "opacity-0",
           )}
         />
@@ -210,7 +211,7 @@ function PalcoTelas({ ativo }: { ativo: number }) {
         data-visual-ativo={ativo === 2 || undefined}
         aria-hidden={ativo !== 2}
         className={cn(
-          "absolute inset-0 transition-opacity duration-300",
+          "absolute inset-0 transition-opacity duration-150",
           ativo === 2 ? "opacity-100" : "opacity-0",
         )}
       >
@@ -221,7 +222,7 @@ function PalcoTelas({ ativo }: { ativo: number }) {
         data-visual-ativo={ativo === 3 || undefined}
         aria-hidden={ativo !== 3}
         className={cn(
-          "absolute inset-0 transition-opacity duration-300",
+          "absolute inset-0 transition-opacity duration-150",
           ativo === 3 ? "opacity-100" : "opacity-0",
         )}
       >
@@ -299,19 +300,23 @@ export function BookingStory() {
               data-indicador={verbo}
               data-indicador-ativo={indice === estado.passo || undefined}
               className={cn(
-                "inline-flex h-7 items-center gap-2 rounded-[var(--radius-pill)] px-3 text-[0.75rem] font-semibold transition-colors duration-300",
+                "inline-flex h-7 items-center gap-1.5 rounded-[var(--radius-pill)] px-2 text-[0.7rem] font-semibold transition-colors duration-300 sm:gap-2 sm:px-3 sm:text-[0.75rem]",
                 cumprido && "bg-marca-soft text-marca",
                 corrente && "bg-marca text-white",
                 !cumprido && !corrente && "bg-neutral-soft text-muted-foreground",
               )}
             >
-              {cumprido ? <Check className="size-3.5" /> : <span>{indice + 1}</span>}
+              {cumprido ? (
+                <Check className="size-3.5" />
+              ) : (
+                <span className="inline-block w-3.5 text-center">{indice + 1}</span>
+              )}
               <span>{verbo}</span>
             </span>
             {indice < PASSOS.length - 1 ? (
               <span
                 className={cn(
-                  "h-px w-5 transition-colors duration-300 sm:w-9",
+                  "hidden h-px transition-colors duration-300 sm:inline-block sm:w-9",
                   indice < estado.passo || estado.resolucao ? "bg-marca/50" : "bg-border",
                 )}
               />
@@ -393,7 +398,7 @@ export function BookingStory() {
               <RotuloCapitulo>Quatro passos, nenhuma ligação</RotuloCapitulo>
               <h2
                 id="passos-titulo"
-                className="mt-3 max-w-3xl text-2xl leading-tight sm:text-3xl lg:text-4xl"
+                className="mt-3 max-w-3xl text-xl leading-tight sm:text-3xl lg:text-4xl"
               >
                 Marcar um Appointment é tão fácil quanto mandar uma mensagem.
               </h2>
@@ -409,7 +414,7 @@ export function BookingStory() {
                 // Altura reservada: os parágrafos das etapas têm números de
                 // linha diferentes, e sem piso a coluna encolhia entre estados
                 // e empurrava o aparelho alguns pixels para cima.
-                className="min-h-[8rem] animate-in fade-in slide-in-from-bottom-1 duration-300 sm:min-h-[9rem] lg:min-h-[15rem]"
+                className="min-h-[6.5rem] animate-in fade-in slide-in-from-bottom-1 duration-300 sm:min-h-[9rem] lg:min-h-[15rem]"
               >
                 <h3 className="text-xl leading-snug sm:text-2xl">
                   <span className="text-marca">{estado.resolucao ? "✓" : estado.passo + 1}.</span>{" "}
@@ -438,7 +443,7 @@ export function BookingStory() {
                 />
                 <PhoneFrame
                   screen="fluxo"
-                  className="relative w-[min(11.5rem,calc((100svh-var(--header-height)-26.5rem)*0.45))] sm:w-[min(13rem,calc((100svh-var(--header-height)-25.5rem)*0.45))] lg:w-[min(15.25rem,calc((100dvh-var(--header-height)-19rem)*0.45))] 2xl:w-[min(17.5rem,calc((100dvh-var(--header-height)-20rem)*0.45))]"
+                  className="relative w-[min(11.5rem,calc((100svh-var(--header-height)-24rem)*0.45))] sm:w-[min(13rem,calc((100svh-var(--header-height)-23.5rem)*0.45))] lg:w-[min(15.25rem,calc((100dvh-var(--header-height)-19rem)*0.45))] 2xl:w-[min(17.5rem,calc((100dvh-var(--header-height)-20rem)*0.45))]"
                 >
                   <PalcoTelas ativo={ativo} />
                 </PhoneFrame>
@@ -446,7 +451,7 @@ export function BookingStory() {
                     duas linhas. Dentro dela, uma legenda que quebrava em duas
                     linhas em alguns estados mudava a altura da figura e o
                     aparelho deslizava até 21px entre uma etapa e outra. */}
-                <p className="relative mt-3 flex min-h-[2.75rem] items-start justify-center text-center text-sm leading-snug text-muted-foreground">
+                <p className="relative mt-2 flex min-h-[2.25rem] items-start justify-center text-center text-xs leading-snug text-muted-foreground sm:mt-3 sm:min-h-[2.75rem] sm:text-sm">
                   {estado.legenda}
                 </p>
               </div>

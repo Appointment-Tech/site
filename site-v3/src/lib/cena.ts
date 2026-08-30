@@ -199,6 +199,12 @@ export function useCenaSincronizada({
       });
 
       ScrollTrigger.refresh();
+
+      // Fonte carregada tarde muda a altura de tudo que vem antes da cena e
+      // desloca os limiares já calculados. Recalcula quando elas assentarem.
+      void document.fonts?.ready.then(() => {
+        if (ativo) ScrollTrigger.refresh();
+      });
     })();
 
     return () => {
