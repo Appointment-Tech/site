@@ -44,6 +44,16 @@ export type MountPreloaderOptions = {
   /** Lazy three loader. Omitted or failing: the CSS bar carries the progress. */
   loadThree?: () => Promise<typeof THREE_NS>;
   minDurationMs?: number;
+  /**
+   * True when the overlay and the <style> are React-managed nodes (v3).
+   *
+   * Then teardown must NOT remove them imperatively: React still owns them,
+   * and reconciling a mutilated tree on the first client-side navigation
+   * re-injected the overlay markup without its CSS — a stray logo and a bare
+   * "0% Carregando" pushed the whole page down. Teardown only hides the
+   * overlay; the owning component unmounts it through state.
+   */
+  managedByReact?: boolean;
 };
 
 declare global {
@@ -56,7 +66,7 @@ export function mountPreloader(options: MountPreloaderOptions): PreloaderHandle 
   const existing = window.__apptPreloader;
   if (existing) return existing;
 
-  const { theme, minDurationMs = MIN_DURATION_MS } = options;
+  const { theme, minDurationMs = MIN_DURATION_MS, managedByReact = false } = options;
   const root = document.documentElement;
 
   ensureStyle(theme);
@@ -162,10 +172,15 @@ export function mountPreloader(options: MountPreloaderOptions): PreloaderHandle 
     scene?.dispose();
     scene = null;
 
-    overlay.remove();
+    if (managedByReact) {
+      // React owns these nodes; hiding is ours, removing is the component's.
+      overlay.style.display = "none";
+    } else {
+      overlay.remove();
+      document.getElementById(PRELOADER_STYLE_ID)?.remove();
+    }
     document.body.style.overflow = previousOverflow;
     root.classList.remove(PRELOADING_CLASS, PRELOADING_DONE_CLASS);
-    document.getElementById(PRELOADER_STYLE_ID)?.remove();
 
     if (window.__apptPreloader === handle) delete window.__apptPreloader;
     window.dispatchEvent(new CustomEvent("appt:preloader-done"));
